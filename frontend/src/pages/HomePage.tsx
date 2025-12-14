@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,7 +113,6 @@ const scenarios = [
 ];
 
 export default function HomePage() {
-  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-purple-50/30">
