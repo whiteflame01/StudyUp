@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLogin } from '@/hooks/useAuth';
 import { loginSchema, type LoginFormData } from '@/lib/validations';
-import { OAuthButtons } from './OAuthButtons';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -109,12 +108,7 @@ export const LoginForm = () => {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">Or continue with</span>
-              </div>
             </div>
-            
-            <OAuthButtons />
           </div>
           
           <div className="mt-6 text-center">

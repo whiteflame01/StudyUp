@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRegister } from '@/hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '@/lib/validations';
-import { OAuthButtons } from './OAuthButtons';
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
@@ -207,8 +206,6 @@ export const RegisterForm = () => {
                 <span className="bg-white px-2 text-gray-500">Or continue with</span>
               </div>
             </div>
-            
-            <OAuthButtons />
           </div>
           
           <div className="mt-6 text-center">

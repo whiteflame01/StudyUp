@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Mail, Lock, User, UserPlus, AlertCircle, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield, Fingerprint, AlertCircle, Check, X, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { registerSchema } from '@/lib/validations';
 
 interface PasswordRequirement {
   label: string;
@@ -16,11 +16,7 @@ interface PasswordRequirement {
 }
 
 const passwordRequirements: PasswordRequirement[] = [
-  { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-  { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
-  { label: 'One lowercase letter', test: (p) => /[a-z]/.test(p) },
-  { label: 'One number', test: (p) => /\d/.test(p) },
-  { label: 'One special character', test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+  { label: 'No leading or trailing spaces', test: (p) => p === p.trim() },
 ];
 
 export default function RegisterPage() {
@@ -29,51 +25,29 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+    const result = registerSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
     }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else {
-      const failedRequirements = passwordRequirements.filter(req => !req.test(formData.password));
-      if (failedRequirements.length > 0) {
-        newErrors.password = 'Password does not meet requirements';
-      }
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,12 +56,12 @@ export default function RegisterPage() {
     if (!validateForm()) return;
 
     try {
-      await register(formData.email, formData.password, formData.name);
+      await register(formData.email, formData.password);
       toast({
-        title: "Account created!",
-        description: "Welcome to Study Up! Please complete your profile to get started.",
+        title: "Session started!",
+        description: "You're now anonymous. Start exploring and we'll find your matches.",
       });
-      navigate('/profile');
+      navigate('/dashboard');
     } catch (error) {
       toast({
         title: "Registration failed",
@@ -97,7 +71,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -105,65 +79,61 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <UserPlus className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Join Study Up</h1>
-          <p className="text-gray-600 mt-2">Create your account to find study buddies</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-blue-50/30 to-purple-50/30 p-4">
+      <div className="w-full max-w-lg">
+        {/* Header with Privacy Focus */}
+        <div className="text-center mb-6 sm:mb-8">
+          <Link to="/" className="inline-flex items-center justify-center gap-2 mb-6">
+            <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+              <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+            </div>
+          </Link>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-2 sm:mb-3">
+            Start Your Anonymous Session
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto px-2">
+            No names. No profiles. Just pure learning behavior.
+          </p>
         </div>
 
-        <Card className="shadow-lg border-0">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center">Create Account</CardTitle>
-            <CardDescription className="text-center">
-              Fill in your details to get started
+        <Card className="shadow-xl border-2 border-blue-100">
+          <CardHeader className="space-y-2 pb-4">
+            <CardTitle className="text-lg sm:text-xl text-center">Create Your Account</CardTitle>
+            <CardDescription className="text-center text-sm">
+              We only need login credentials — your identity stays anonymous
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-
+          <CardContent className="space-y-4 sm:space-y-5">
+            {/* Privacy Notice */}
+            <Alert className="bg-blue-50 border-blue-200">
+              <Shield className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-xs sm:text-sm text-blue-900">
+                <strong>Your Privacy Guarantee:</strong> Your email is only used for logging back in. 
+                It will <span className="font-semibold underline">never</span> be shared with other users or third parties. 
+                You will appear as an anonymous ID (e.g., "User_8492") to everyone.
+              </AlertDescription>
+            </Alert>
 
             {/* Registration Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className={`pl-10 ${errors.name ? 'border-destructive' : ''}`}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.name && (
-                  <Alert variant="destructive" className="py-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{errors.name}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="your.email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
+                    className={`pl-10 h-11 ${errors.email ? 'border-destructive' : ''}`}
                     disabled={isLoading}
                   />
                 </div>
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  Only for authentication — never visible to others
+                </p>
                 {errors.email && (
                   <Alert variant="destructive" className="py-2">
                     <AlertCircle className="h-4 w-4" />
@@ -173,23 +143,23 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a password"
+                    placeholder="Create a secure password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     onFocus={() => setShowPasswordRequirements(true)}
-                    className={`pl-10 pr-10 ${errors.password ? 'border-destructive' : ''}`}
+                    className={`pl-10 pr-10 h-11 ${errors.password ? 'border-destructive' : ''}`}
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -198,23 +168,25 @@ export default function RegisterPage() {
                 
                 {/* Password Requirements */}
                 {showPasswordRequirements && formData.password && (
-                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Password requirements:</p>
-                    {passwordRequirements.map((req, index) => {
-                      const isValid = req.test(formData.password);
-                      return (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          {isValid ? (
-                            <Check className="h-3 w-3 text-green-600" />
-                          ) : (
-                            <X className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          <span className={isValid ? 'text-green-600' : 'text-muted-foreground'}>
-                            {req.label}
-                          </span>
-                        </div>
-                      );
-                    })}
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-200">
+                    <p className="text-xs font-semibold text-gray-600">Password requirements:</p>
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {passwordRequirements.map((req, index) => {
+                        const isValid = req.test(formData.password);
+                        return (
+                          <div key={index} className="flex items-center gap-2 text-xs">
+                            {isValid ? (
+                              <Check className="h-3 w-3 text-green-600 shrink-0" />
+                            ) : (
+                              <X className="h-3 w-3 text-gray-400 shrink-0" />
+                            )}
+                            <span className={isValid ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                              {req.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 
@@ -227,22 +199,22 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Confirm your password"
+                    placeholder="Re-enter your password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-destructive' : ''}`}
+                    className={`pl-10 pr-10 h-11 ${errors.confirmPassword ? 'border-destructive' : ''}`}
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -256,65 +228,74 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="agreeToTerms"
-                    checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
-                    disabled={isLoading}
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <label
-                      htmlFor="agreeToTerms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      I agree to the{' '}
-                      <Link to="/terms" className="text-primary hover:underline">
-                        Terms of Service
-                      </Link>{' '}
-                      and{' '}
-                      <Link to="/privacy" className="text-primary hover:underline">
-                        Privacy Policy
-                      </Link>
-                    </label>
+              {/* What Happens Next */}
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0">
+                    <Fingerprint className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-gray-900">What happens next?</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Once you sign up, our AI observes what you study and how you learn. 
+                      Within minutes, we'll match you with peers who have a 95%+ Similarity Score with your current session.
+                    </p>
                   </div>
                 </div>
-                {errors.agreeToTerms && (
-                  <Alert variant="destructive" className="py-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{errors.agreeToTerms}</AlertDescription>
-                  </Alert>
-                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full h-11 sm:h-12 text-base font-semibold shadow-lg hover:shadow-xl" 
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Creating account...
+                    Starting session...
                   </>
                 ) : (
                   <>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Create Account
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Start Anonymous Session
                   </>
                 )}
               </Button>
             </form>
 
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground pt-2">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary hover:underline font-medium">
+              <Link to="/login" className="text-primary hover:underline font-semibold">
                 Sign in
               </Link>
             </div>
           </CardContent>
         </Card>
 
+        {/* Privacy Features */}
+        <div className="mt-6 sm:mt-8 grid sm:grid-cols-3 gap-3 sm:gap-4 px-2">
+          <div className="text-center p-3 bg-white rounded-lg border border-gray-200">
+            <Shield className="h-5 w-5 text-blue-600 mx-auto mb-1.5" />
+            <p className="text-xs font-semibold text-gray-900">Zero Identity</p>
+            <p className="text-xs text-gray-500">Anonymous to everyone</p>
+          </div>
+          <div className="text-center p-3 bg-white rounded-lg border border-gray-200">
+            <Lock className="h-5 w-5 text-purple-600 mx-auto mb-1.5" />
+            <p className="text-xs font-semibold text-gray-900">No Sharing</p>
+            <p className="text-xs text-gray-500">Email never visible</p>
+          </div>
+          <div className="text-center p-3 bg-white rounded-lg border border-gray-200">
+            <Fingerprint className="h-5 w-5 text-green-600 mx-auto mb-1.5" />
+            <p className="text-xs font-semibold text-gray-900">Behavior Only</p>
+            <p className="text-xs text-gray-500">Matched by actions</p>
+          </div>
+        </div>
+
         {/* Footer */}
-        <div className="text-center mt-8 text-sm text-muted-foreground">
-          Must be 13 years or older to create an account
+        <div className="text-center mt-6 sm:mt-8 text-xs text-muted-foreground px-2">
+          By creating an account, you agree to our{' '}
+          <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{' '}
+          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>

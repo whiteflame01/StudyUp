@@ -5,6 +5,8 @@ export interface User {
   email: string;
   avatar?: string;
   profile?: Profile;
+  emailVerified: boolean;
+  profileSetupComplete: boolean;
   createdAt: Date;
 }
 

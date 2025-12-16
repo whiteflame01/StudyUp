@@ -5,7 +5,6 @@ export interface User {
   name: string;
   username: string;
   emailVerified: boolean;
-  oauthProvider?: string;
   createdAt: string;
   updatedAt: string;
 }

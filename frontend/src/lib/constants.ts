@@ -127,7 +127,6 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     ME: '/auth/me',
-    OAUTH: (provider: string) => `/auth/oauth/${provider}`,
   },
   USERS: {
     ME: '/users/me',
