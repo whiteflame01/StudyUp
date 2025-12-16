@@ -5,13 +5,13 @@ import {
   comparePassword, 
   generateJWT, 
   registrationSchema, 
-  loginSchema 
+  loginSchema, 
+  generateUsername
 } from '../utils/auth';
 
 export interface RegisterInput {
   email: string;
   password: string;
-  name: string;
 }
 
 export interface LoginInput {
@@ -20,7 +20,7 @@ export interface LoginInput {
 }
 
 export interface AuthResponse {
-  user: Omit<User, 'passwordHash'>;
+  user: Omit<User, 'password'>;
   token: string;
 }
 
@@ -42,14 +42,11 @@ export class AuthService {
     }
 
     // Generate username from email (before @ symbol)
-    const baseUsername = validatedInput.email.split('@')[0];
-    let username = baseUsername;
-    let counter = 1;
+    let username = generateUsername();
 
     // Ensure username is unique
     while (await prisma.user.findUnique({ where: { username } })) {
-      username = `${baseUsername}${counter}`;
-      counter++;
+      username = generateUsername();
     }
 
     // Hash password
@@ -59,8 +56,7 @@ export class AuthService {
     const user = await prisma.user.create({
       data: {
         email: validatedInput.email.toLowerCase(),
-        passwordHash,
-        name: validatedInput.name,
+        password: passwordHash,
         username,
       },
     });
@@ -72,7 +68,7 @@ export class AuthService {
     });
 
     // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -92,12 +88,12 @@ export class AuthService {
       where: { email: validatedInput.email.toLowerCase() },
     });
 
-    if (!user || !user.passwordHash) {
+    if (!user || !user.password) {
       throw new Error('Invalid email or password');
     }
 
     // Verify password
-    const isPasswordValid = await comparePassword(validatedInput.password, user.passwordHash);
+    const isPasswordValid = await comparePassword(validatedInput.password, user.password);
     if (!isPasswordValid) {
       throw new Error('Invalid email or password');
     }
@@ -109,7 +105,7 @@ export class AuthService {
     });
 
     // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -120,7 +116,7 @@ export class AuthService {
   /**
    * Get user by ID
    */
-  async getUserById(userId: string): Promise<Omit<User, 'passwordHash'> | null> {
+  async getUserById(userId: string): Promise<Omit<User, 'password'> | null> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -129,14 +125,14 @@ export class AuthService {
       return null;
     }
 
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 
   /**
    * Validate user exists and return user data
    */
-  async validateUser(userId: string): Promise<Omit<User, 'passwordHash'>> {
+  async validateUser(userId: string): Promise<Omit<User, 'password'>> {
     const user = await this.getUserById(userId);
     if (!user) {
       throw new Error('User not found');

@@ -12,8 +12,6 @@ declare global {
         name: string;
         username: string;
         emailVerified: boolean;
-        oauthProvider: string | null;
-        oauthId: string | null;
         createdAt: Date;
         updatedAt: Date;
       };

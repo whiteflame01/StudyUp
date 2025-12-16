@@ -8,6 +8,9 @@ import authRoutes from './routes/auth';
 // Load environment variables
 dotenv.config();
 
+// Preload word lists into memory (loaded once at server start)
+import './utils/words';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

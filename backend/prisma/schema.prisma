@@ -1,9 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file
 
 generator client {
   provider = "prisma-client-js"
 }
+
 
 datasource db {
   provider = "postgresql"
@@ -11,154 +11,59 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String?
-  name          String
-  username      String   @unique
-  emailVerified Boolean  @default(false)
-  oauthProvider String?
-  oauthId       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  isSetup   Boolean  @default(false)
 
-  profile              Profile?
-  sentConnections      Connection[] @relation("requester")
-  receivedConnections  Connection[] @relation("receiver")
-  sentMessages         Message[]    @relation("sender")
-  receivedMessages     Message[]    @relation("receiver")
-  createdSessions      StudySession[] @relation("creator")
-  resources            Resource[]
-  givenFeedback        Feedback[]   @relation("rater")
-  receivedFeedback     Feedback[]   @relation("rated")
-  notifications        Notification[]
+  createdAt DateTime @default(now())
 
-  @@index([email])
-  @@index([username])
+  // Relations
+  profile   Profile? // One-to-One relation (Optional)
+  posts     Post[]
+  comments  Comment[]
 }
 
 model Profile {
-  id             String   @id @default(uuid())
-  userId         String   @unique
-  subjects       Json     // ["Math", "Physics", "Chemistry"]
-  goals          Json     // ["Exam Prep", "Homework Help"]
-  availability   Json     // {"monday": ["14:00-16:00", "18:00-20:00"]}
-  learningStyle  String?  // "visual", "auditory", "kinesthetic", "reading"
-  avgRating      Float    @default(0)
-  bio            String?  @db.Text
-  completionPct  Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(uuid())
+  bio       String?  @db.Text
+  gender    String?  // e.g., "Male", "Female", "Non-binary"
+  avatarUrl String?  
+  
+  // "And all" - Basic academic info 
+  college   String?
+  major     String?
+  year      String?  // e.g., "Freshman", "2025"
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+  // Relation back to User
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Connection {
-  id          String   @id @default(uuid())
-  requesterId String
-  receiverId  String
-  status      String   @default("pending") // "pending", "accepted", "declined"
-  message     String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  requester User @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
-  receiver  User @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@unique([requesterId, receiverId])
-  @@index([requesterId])
-  @@index([receiverId])
-  @@index([status])
-}
-
-model Message {
-  id         String    @id @default(uuid())
-  senderId   String
-  receiverId String
-  content    String    @db.Text
-  fileUrl    String?
-  fileName   String?
-  sentAt     DateTime  @default(now())
-  readAt     DateTime?
-
-  sender   User @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver User @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@index([senderId, receiverId])
-  @@index([sentAt])
-}
-
-model StudySession {
-  id           String   @id @default(uuid())
-  creatorId    String
-  title        String
-  subject      String
-  description  String?  @db.Text
-  dateTime     DateTime
-  duration     Int      // minutes (15-480)
-  participants Json     // ["userId1", "userId2"]
-  status       String   @default("scheduled") // "scheduled", "completed", "cancelled"
-  isRecurring  Boolean  @default(false)
-  recurrenceId String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  creator  User       @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
-  feedback Feedback[]
-
-  @@index([creatorId])
-  @@index([dateTime])
-  @@index([status])
-}
-
-model Resource {
-  id          String   @id @default(uuid())
-  userId      String
-  fileName    String
-  fileType    String
-  fileSize    Int      // bytes
-  fileUrl     String
-  s3Key       String
-  sharedWith  Json     // ["userId1", "userId2"]
-  uploadedAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Feedback {
-  id           String   @id @default(uuid())
-  sessionId    String
-  raterId      String
-  ratedUserId  String
-  rating       Int      // 1-5
-  comment      String?  @db.Text
-  createdAt    DateTime @default(now())
-
-  session    StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  rater      User         @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
-  ratedUser  User         @relation("rated", fields: [ratedUserId], references: [id], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([ratedUserId])
-}
-
-model Notification {
-  id        String    @id @default(uuid())
-  userId    String
-  type      String    // "connection_request", "message", "session_reminder", etc.
+model Post {
+  id        String   @id @default(uuid())
   title     String
-  message   String    @db.Text
-  data      Json?     // Additional context data
-  read      Boolean   @default(false)
-  sentAt    DateTime  @default(now())
-  readAt    DateTime?
+  content   String   @db.Text
+  topic     String?  // e.g., "Math", "Computer Science"
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([userId, read])
-  @@index([sentAt])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  comments  Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { ADJECTIVES, NOUNS } from './words';
 
 // Password validation schema
 export const passwordSchema = z.string()
@@ -16,8 +17,7 @@ export const emailSchema = z.string().email('Invalid email format');
 // Registration validation schema
 export const registrationSchema = z.object({
   email: emailSchema,
-  password: passwordSchema,
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  password: passwordSchema
 });
 
 // Login validation schema
@@ -106,4 +106,15 @@ export function extractTokenFromHeader(authHeader: string | undefined): string |
   }
 
   return parts[1];
+}
+
+export function generateUsername(): string {
+  const getRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+
+  const adjective = (ADJECTIVES.length && getRandom(ADJECTIVES)) || 'quick';
+  const noun = (NOUNS.length && getRandom(NOUNS)) || 'fox';
+
+  const suffix = Math.floor(Math.random() * 900) + 100;
+
+  return `${adjective}${noun}${suffix}`.toLowerCase();
 }
