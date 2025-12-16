@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Edit, MoreHorizontal } from 'lucide-react';
+import { Search, Edit } from 'lucide-react';
 import { mockUsers, mockMessages } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday } from 'date-fns';

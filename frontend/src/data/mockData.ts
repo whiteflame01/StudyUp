@@ -1,4 +1,4 @@
-import { User, StudySession, Message, Connection, Notification, DashboardStats, Recommendation } from '@/types';
+import { User, Message, Connection, Notification, DashboardStats, Recommendation } from '@/types';
 
 export const currentUser: User = {
   id: 'user-1',
@@ -250,53 +250,6 @@ export const mockMessages: Message[] = [
     content: 'Just finished the Python project we discussed. Want to review it together?',
     sentAt: new Date('2024-11-09T18:15:00'),
     readAt: new Date('2024-11-09T19:00:00'),
-  },
-];
-
-export const mockSessions: StudySession[] = [
-  {
-    id: 'session-1',
-    creatorId: 'user-1',
-    creator: currentUser,
-    title: 'Calculus Problem Solving',
-    subject: 'Mathematics',
-    description: 'Working through integration and differentiation problems',
-    dateTime: new Date('2024-12-12T14:00:00'),
-    duration: 90,
-    participants: ['user-1', 'user-2'],
-    participantUsers: [currentUser, mockUsers[0]],
-    status: 'scheduled',
-    createdAt: new Date('2024-11-08'),
-  },
-  {
-    id: 'session-2',
-    creatorId: 'user-3',
-    creator: mockUsers[1],
-    title: 'Python Data Structures',
-    subject: 'Computer Science',
-    description: 'Deep dive into advanced data structures implementation',
-    dateTime: new Date('2024-12-13T16:00:00'),
-    duration: 120,
-    participants: ['user-1', 'user-3'],
-    participantUsers: [currentUser, mockUsers[1]],
-    status: 'scheduled',
-    isRecurring: true,
-    recurringPattern: 'weekly',
-    createdAt: new Date('2024-11-05'),
-  },
-  {
-    id: 'session-3',
-    creatorId: 'user-1',
-    creator: currentUser,
-    title: 'Physics Lab Review',
-    subject: 'Physics',
-    description: 'Reviewing lab reports and preparing for the practical exam',
-    dateTime: new Date('2024-12-15T10:00:00'),
-    duration: 60,
-    participants: ['user-1', 'user-2', 'user-5'],
-    participantUsers: [currentUser, mockUsers[0], mockUsers[4]],
-    status: 'scheduled',
-    createdAt: new Date('2024-11-10'),
   },
 ];
 

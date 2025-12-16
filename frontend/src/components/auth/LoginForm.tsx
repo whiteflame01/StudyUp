@@ -13,7 +13,7 @@ export const LoginForm = () => {
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || '/';
   
   const {
     register,

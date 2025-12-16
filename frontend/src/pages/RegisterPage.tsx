@@ -61,7 +61,7 @@ export default function RegisterPage() {
         title: "Session started!",
         description: "You're now anonymous. Start exploring and we'll find your matches.",
       });
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       toast({
         title: "Registration failed",

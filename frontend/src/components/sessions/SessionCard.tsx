@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { StudySession } from '@/types';
-import { Calendar, Clock, Users, Video, Edit, Trash2, MoreHorizontal, Repeat } from 'lucide-react';
+import { Clock, Users, Video, Edit, Trash2, MoreHorizontal, Repeat } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {

@@ -32,7 +32,7 @@ export function ProtectedRoute({
 
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && isAuthenticated) {
-    const from = location.state?.from?.pathname || redirectTo || '/dashboard';
+    const from = location.state?.from?.pathname || redirectTo || '/';
     return <Navigate to={from} replace />;
   }
 

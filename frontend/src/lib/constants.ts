@@ -162,9 +162,9 @@ export const API_ENDPOINTS = {
     BY_USER: (userId: string) => `/feedback/${userId}`,
   },
   DASHBOARD: {
-    STATS: '/dashboard/stats',
-    ACTIVITY: '/dashboard/activity',
-    EXPORT: '/dashboard/export',
+    STATS: '/stats',
+    ACTIVITY: '/activity',
+    EXPORT: '/export',
   },
   NOTIFICATIONS: {
     BASE: '/notifications',

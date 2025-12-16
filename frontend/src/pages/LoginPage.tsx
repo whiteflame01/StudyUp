@@ -47,7 +47,7 @@ export default function LoginPage() {
         title: "Session resumed!",
         description: "Welcome back. Let's find your study matches.",
       });
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       toast({
         title: "Login failed",

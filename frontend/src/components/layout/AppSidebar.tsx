@@ -23,7 +23,7 @@ import { mockNotifications } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 
 const navItems = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/', icon: LayoutDashboard, label: 'feed' },
   { path: '/buddies', icon: Users, label: 'Find Buddies' },
   { path: '/chat', icon: MessageCircle, label: 'Messages', badge: 2 },
   { path: '/sessions', icon: Calendar, label: 'Sessions' },

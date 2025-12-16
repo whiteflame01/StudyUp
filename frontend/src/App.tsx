@@ -28,7 +28,7 @@ const App = () => (
             <Route 
               path="/" 
               element={
-                <ProtectedRoute requireAuth={false} redirectTo="/feed">
+                <ProtectedRoute requireAuth={false} redirectTo="/app/feed">
                   <HomePage />
                 </ProtectedRoute>
               } 
@@ -36,7 +36,7 @@ const App = () => (
             <Route 
               path="/login" 
               element={
-                <ProtectedRoute requireAuth={false} redirectTo="/feed">
+                <ProtectedRoute requireAuth={false} redirectTo="/app/feed">
                   <LoginPage />
                 </ProtectedRoute>
               } 
@@ -44,7 +44,7 @@ const App = () => (
             <Route 
               path="/register" 
               element={
-                <ProtectedRoute requireAuth={false} redirectTo="/feed">
+                <ProtectedRoute requireAuth={false} redirectTo="/app/feed">
                   <RegisterPage />
                 </ProtectedRoute>
               } 
@@ -52,17 +52,18 @@ const App = () => (
 
             {/* Protected routes */}
             <Route 
+              path="/app"
               element={
                 <ProtectedRoute requireAuth={true} redirectTo="/login">
                   <MainPage />
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="/feed" replace />} />
-              <Route path="/feed" element={<FeedPage />} />
-              <Route path="/chats" element={<ChatsPage />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="/explore" element={<ExplorePage />} />
+              <Route index element={<Navigate to="/app/feed" replace />} />
+              <Route path="feed" element={<FeedPage />} />
+              <Route path="chats" element={<ChatsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="explore" element={<ExplorePage />} />
             </Route>
 
           </Routes>

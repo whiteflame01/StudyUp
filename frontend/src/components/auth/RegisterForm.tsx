@@ -33,7 +33,7 @@ export const RegisterForm = () => {
         email: data.email,
         password: data.password,
       });
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed. Please try again.';
       setError('root', { message });
