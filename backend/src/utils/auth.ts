@@ -28,6 +28,7 @@ export interface JWTPayload {
     id: string;
     email: string;
     username: string;
+    isSetup: boolean;
     name: string | null;
     emailVerified: boolean;
     createdAt: Date;
@@ -61,12 +62,12 @@ export function generateJWT(payload: { userWithoutPassword: any }): string {
     throw new Error('JWT_SECRET environment variable is not set');
   }
 
-  const expiresIn: string = process.env.JWT_EXPIRES_IN || '24h';
+  const expiresIn = (process.env.JWT_EXPIRES_IN || '24h') as string;
   return jwt.sign(payload, secret, {
-    expiresIn,
+    expiresIn: expiresIn,
     issuer: 'study-up-platform',
     audience: 'study-up-users',
-  });
+  } as jwt.SignOptions);
 }
 
 /**
@@ -82,7 +83,7 @@ export function verifyJWT(token: string): JWTPayload {
     const decoded = jwt.verify(token, secret, {
       issuer: 'study-up-platform',
       audience: 'study-up-users',
-    });
+    }) as JWTPayload;
     
     return decoded;
   } catch (error) {
