@@ -19,7 +19,7 @@ export function ActivityChart() {
   return (
     <Card className="bg-white border">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
           <BarChart3 className="h-5 w-5 text-blue-600" />
           Study Activity
         </CardTitle>
@@ -29,7 +29,7 @@ export function ActivityChart() {
           <div className="flex items-end justify-between h-32 gap-2">
             {data.map((item) => (
               <div key={item.day} className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-gray-200 rounded-t-sm relative overflow-hidden">
+                <div className="w-full bg-border rounded-t-sm relative overflow-hidden">
                   <div 
                     className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-sm transition-all duration-500"
                     style={{ 
@@ -38,13 +38,13 @@ export function ActivityChart() {
                     }}
                   />
                 </div>
-                <span className="text-xs text-gray-500">{item.day}</span>
+                <span className="text-xs text-muted-foreground">{item.day}</span>
               </div>
             ))}
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Total this week: <span className="font-medium text-gray-900">23 hours</span>
+            <p className="text-sm text-muted-foreground">
+              Total this week: <span className="font-medium text-foreground">23 hours</span>
             </p>
           </div>
         </div>

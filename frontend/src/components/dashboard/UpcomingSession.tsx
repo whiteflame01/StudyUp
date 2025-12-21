@@ -20,7 +20,7 @@ export function UpcomingSession({ session, className }: UpcomingSessionProps) {
 
   return (
     <div className={cn(
-      "flex items-center gap-4 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors",
+      "flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors",
       className
     )}>
       <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -28,15 +28,15 @@ export function UpcomingSession({ session, className }: UpcomingSessionProps) {
       </div>
       
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-gray-900 truncate">{session.title}</h4>
-        <p className="text-xs text-gray-600">{session.subject}</p>
+        <h4 className="font-medium text-sm text-foreground truncate">{session.title}</h4>
+        <p className="text-xs text-muted-foreground">{session.subject}</p>
         
         <div className="flex items-center gap-4 mt-1">
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
             {formatDate(session.dateTime)}
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Users className="h-3 w-3" />
             {session.participants.length} participants
           </div>

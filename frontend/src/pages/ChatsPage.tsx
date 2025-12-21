@@ -33,8 +33,8 @@ export default function ChatsPage() {
   return (
     <div className="max-w-3xl mx-auto">
       {/* Header */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10">
-        <h2 className="text-lg font-semibold mb-3">Chats</h2>
+      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-10">
+        <h2 className="text-lg font-semibold text-foreground mb-3">Chats</h2>
         
         {/* Tabs */}
         <div className="flex gap-2">
@@ -60,11 +60,11 @@ export default function ChatsPage() {
       </div>
 
       {/* Chat Rooms List */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-border">
         {rooms.map((room) => (
           <div
             key={room.id}
-            className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
@@ -77,14 +77,14 @@ export default function ChatsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-sm truncate">{room.name}</h3>
+                    <h3 className="font-semibold text-sm text-foreground truncate">{room.name}</h3>
                     {room.unread > 0 && (
                       <Badge variant="destructive" className="h-5 px-2 text-xs">
                         {room.unread}
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {room.members} members
@@ -102,11 +102,11 @@ export default function ChatsPage() {
       </div>
 
       {/* Info Card */}
-      <Card className="m-4 p-4 bg-blue-50 border-blue-200">
-        <h3 className="font-semibold text-sm mb-2">
+      <Card className="m-4 p-4 bg-muted border-border">
+        <h3 className="font-semibold text-sm text-foreground mb-2">
           {activeTab === 'forum' ? 'About Forums' : 'About Groups'}
         </h3>
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-muted-foreground">
           {activeTab === 'forum'
             ? 'Forums are open to everyone. Discuss topics, ask questions, and help others.'
             : 'Groups are smaller study sessions. Join groups focused on specific courses or topics.'}

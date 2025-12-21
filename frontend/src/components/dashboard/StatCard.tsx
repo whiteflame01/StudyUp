@@ -30,10 +30,10 @@ export function StatCard({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold text-foreground">{value}</p>
             {subtitle && (
-              <p className="text-xs text-gray-500">{subtitle}</p>
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
             )}
             {trend && (
               <div className={cn(
@@ -49,7 +49,7 @@ export function StatCard({
             variant === 'primary' && "bg-blue-100 text-blue-600",
             variant === 'secondary' && "bg-green-100 text-green-600",
             variant === 'success' && "bg-green-100 text-green-600",
-            variant === 'default' && "bg-gray-100 text-gray-600"
+            variant === 'default' && "bg-muted text-muted-foreground"
           )}>
             <Icon className="h-6 w-6" />
           </div>

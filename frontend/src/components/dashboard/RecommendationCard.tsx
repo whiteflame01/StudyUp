@@ -24,16 +24,16 @@ export function RecommendationCard({ recommendation, onConnect, className }: Rec
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <h4 className="font-medium text-sm text-gray-900 truncate">{user.name}</h4>
+              <h4 className="font-medium text-sm text-foreground truncate">{user.name}</h4>
               <span className="text-xs font-medium text-blue-600">
                 {compatibilityScore}% match
               </span>
             </div>
-            <p className="text-xs text-gray-600 mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               {user.profile?.subjects.slice(0, 2).join(', ')}
             </p>
             <div className="mb-3">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {matchReasons[0]}
               </p>
             </div>

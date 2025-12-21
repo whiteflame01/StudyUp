@@ -9,15 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md active:scale-[0.98]",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        gradient: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:opacity-90 shadow-md hover:shadow-lg active:scale-[0.98]",
-        success: "bg-success text-success-foreground hover:bg-success/90 shadow-sm",
-        soft: "bg-primary/10 text-primary hover:bg-primary/20",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md active:scale-[0.98] focus-visible:ring-primary/50",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm focus-visible:ring-destructive/50",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent focus-visible:ring-accent/50",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm focus-visible:ring-secondary/50",
+        ghost: "hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent/50",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary/90 focus-visible:ring-primary/50",
+        gradient: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg active:scale-[0.98] focus-visible:ring-primary/50",
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-sm focus-visible:ring-success/50",
+        soft: "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary/90 focus-visible:ring-primary/30",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -61,8 +61,8 @@ export default function ExplorePage() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10">
-        <h2 className="text-lg font-semibold mb-3">Explore</h2>
+      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-10">
+        <h2 className="text-lg font-semibold text-foreground mb-3">Explore</h2>
         
         {/* Tabs */}
         <div className="flex gap-2">
@@ -100,8 +100,8 @@ export default function ExplorePage() {
       {activeTab === 'forums' && (
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Forums matched to your interests</p>
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <p className="text-sm text-muted-foreground">Forums matched to your interests</p>
           </div>
           {mockForums.map((forum) => (
             <Card key={forum.id} className="p-4 hover:shadow-md transition-shadow">
@@ -112,13 +112,13 @@ export default function ExplorePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm">{forum.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                      <h3 className="font-semibold text-sm text-foreground">{forum.name}</h3>
+                      <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
                         {forum.similarity}% match
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{forum.description}</p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground mb-2">{forum.description}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
                         {forum.members} members
@@ -142,8 +142,8 @@ export default function ExplorePage() {
       {activeTab === 'groups' && (
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Study groups matched to your behavior</p>
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <p className="text-sm text-muted-foreground">Study groups matched to your behavior</p>
           </div>
           {mockGroups.map((group) => (
             <Card key={group.id} className="p-4 hover:shadow-md transition-shadow">
@@ -154,14 +154,14 @@ export default function ExplorePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm">{group.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                      <h3 className="font-semibold text-sm text-foreground">{group.name}</h3>
+                      <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
                         {group.similarity}% match
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{group.description}</p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <Badge variant="outline" className="text-xs">{group.topic}</Badge>
+                    <p className="text-xs text-muted-foreground mb-2">{group.description}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-xs border-border text-muted-foreground">{group.topic}</Badge>
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
                         {group.members} members
@@ -180,8 +180,8 @@ export default function ExplorePage() {
       {activeTab === 'users' && (
         <div className="p-4">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Users with high similarity scores</p>
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <p className="text-sm text-muted-foreground">Users with high similarity scores</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {mockUsers.map((user) => (
@@ -194,19 +194,19 @@ export default function ExplorePage() {
                       </span>
                     </div>
                     {user.online && (
-                      <div className="absolute bottom-0 right-0 h-4 w-4 bg-green-500 border-2 border-white rounded-full" />
+                      <div className="absolute bottom-0 right-0 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
                     )}
                   </div>
                   <div className="mb-2">
-                    <h3 className="font-semibold text-sm mb-1">{user.userId}</h3>
-                    <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                    <h3 className="font-semibold text-sm text-foreground mb-1">{user.userId}</h3>
+                    <Badge className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
                       {user.similarity}% match
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2">
-                    Currently studying: <span className="font-medium">{user.currentTopic}</span>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Currently studying: <span className="font-medium text-foreground">{user.currentTopic}</span>
                   </p>
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-muted-foreground mb-3">
                     🔥 {user.studyStreak} day streak
                   </p>
                   <Button size="sm" variant="outline" className="w-full">
@@ -220,9 +220,9 @@ export default function ExplorePage() {
       )}
 
       {/* Info Card */}
-      <Card className="m-4 p-4 bg-blue-50 border-blue-200">
-        <h3 className="font-semibold text-sm mb-2">How Matching Works</h3>
-        <p className="text-xs text-gray-600">
+      <Card className="m-4 p-4 bg-muted border-border">
+        <h3 className="font-semibold text-sm text-foreground mb-2">How Matching Works</h3>
+        <p className="text-xs text-muted-foreground">
           {activeTab === 'forums' && 'Forums are ranked by how well their content matches your study patterns and interests.'}
           {activeTab === 'groups' && 'Groups are matched based on your learning pace, study schedule, and topic preferences.'}
           {activeTab === 'users' && 'Users are ranked by behavioral similarity - study habits, learning tempo, and topic overlap.'}
