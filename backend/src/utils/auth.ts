@@ -84,6 +84,8 @@ export function verifyJWT(token: string): JWTPayload {
       issuer: 'study-up-platform',
       audience: 'study-up-users',
     }) as JWTPayload;
+
+    console.log('Decoded JWT payload:', decoded);
     
     return decoded;
   } catch (error) {
@@ -97,21 +99,6 @@ export function verifyJWT(token: string): JWTPayload {
   }
 }
 
-/**
- * Extract token from Authorization header
- */
-export function extractTokenFromHeader(authHeader: string | undefined): string | null {
-  if (!authHeader) {
-    return null;
-  }
-
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return null;
-  }
-
-  return parts[1];
-}
 
 export function generateUsername(): string {
   const getRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];

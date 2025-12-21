@@ -47,45 +47,49 @@ export default function MainPage() {
         {/* Left Sidebar */}
         <aside className="hidden md:flex flex-col w-64 h-[calc(100vh-4rem)] sticky top-16 border-r border-gray-200 p-4">
           <nav className="space-y-1">
-            <Link to="/app/feed">
-              <Button
-                variant={isActive('/app/feed') ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 h-12"
-              >
+            <Button
+              variant={isActive('/app/feed') ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 h-12"
+              asChild
+            >
+              <Link to="/app/feed">
                 <Hash className="h-5 w-5" />
                 <span className="text-base">Feed</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link to="/app/chats">
-              <Button
-                variant={isActive('/app/chats') ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 h-12"
-              >
+            <Button
+              variant={isActive('/app/chats') ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 h-12"
+              asChild
+            >
+              <Link to="/app/chats">
                 <MessageCircle className="h-5 w-5" />
                 <span className="text-base">Chats</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link to="/app/messages">
-              <Button
-                variant={isActive('/app/messages') ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 h-12"
-              >
+            <Button
+              variant={isActive('/app/messages') ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 h-12"
+              asChild
+            >
+              <Link to="/app/messages">
                 <Users className="h-5 w-5" />
                 <span className="text-base">Messages</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link to="/app/explore">
-              <Button
-                variant={isActive('/app/explore') ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 h-12"
-              >
+            <Button
+              variant={isActive('/app/explore') ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 h-12"
+              asChild
+            >
+              <Link to="/app/explore">
                 <Compass className="h-5 w-5" />
                 <span className="text-base">Explore</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </nav>
         </aside>
 
@@ -98,42 +102,46 @@ export default function MainPage() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="flex items-center justify-around h-14">
-          <Link to="/app/feed">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={isActive('/app/feed') ? 'text-blue-600' : 'text-gray-600'}
-            >
+          <Button
+            variant="ghost"
+            size="icon"
+            className={isActive('/app/feed') ? 'text-blue-600' : 'text-gray-600'}
+            asChild
+          >
+            <Link to="/app/feed">
               <Hash className="h-6 w-6" />
-            </Button>
-          </Link>
-          <Link to="/app/chats">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={isActive('/app/chats') ? 'text-blue-600' : 'text-gray-600'}
-            >
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={isActive('/app/chats') ? 'text-blue-600' : 'text-gray-600'}
+            asChild
+          >
+            <Link to="/app/chats">
               <MessageCircle className="h-6 w-6" />
-            </Button>
-          <Link to="/app/explore">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={isActive('/app/explore') ? 'text-blue-600' : 'text-gray-600'}
-            >
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={isActive('/app/explore') ? 'text-blue-600' : 'text-gray-600'}
+            asChild
+          >
+            <Link to="/app/explore">
               <Compass className="h-6 w-6" />
-            </Button>
-          </Link>
-          </Link>
-          <Link to="/app/messages">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={isActive('/app/messages') ? 'text-blue-600' : 'text-gray-600'}
-            >
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={isActive('/app/messages') ? 'text-blue-600' : 'text-gray-600'}
+            asChild
+          >
+            <Link to="/app/messages">
               <Users className="h-6 w-6" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </nav>
     </div>

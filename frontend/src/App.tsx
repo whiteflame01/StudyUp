@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import HomePage from "./pages/HomePage";
+import { RootRedirect } from "@/components/RootRedirect";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import MainPage from "./pages/MainPage";
@@ -27,11 +27,7 @@ const App = () => (
             {/* Public routes */}
             <Route 
               path="/" 
-              element={
-                <ProtectedRoute requireAuth={false} redirectTo="/app/feed">
-                  <HomePage />
-                </ProtectedRoute>
-              } 
+              element={<RootRedirect />} 
             />
             <Route 
               path="/login" 

@@ -177,4 +177,29 @@ router.post('/validate', authenticateJWT, async (req: Request, res: Response): P
   }
 });
 
+/**
+ * POST /api/v1/auth/logout
+ * Logout user by clearing the token cookie
+ */
+router.post('/logout', async (_: Request, res: Response): Promise<void> => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logout successful',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Logout failed',
+    });
+  }
+});
+
 export default router;

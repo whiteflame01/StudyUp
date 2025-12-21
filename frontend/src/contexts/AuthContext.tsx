@@ -26,10 +26,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // /api/v1/auth/me
     (async ()=>{
       try{
-        let result = await axios.get('/api/v1/auth/me');
-        const { user } = result.data;
-        if (user) {
-          setUser(user);
+        let result = await axios.get('/api/v1/auth/me', { withCredentials: true });
+        const { data } = result.data;
+        if (data?.user) {
+          setUser(data.user);
         }
         setIsLoading(false);
       } catch (error) {
@@ -42,40 +42,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
-      
       // api/v1/auth/login
-      let response = await axios.post('/api/v1/auth/login', { email, password });
-      const { user } = response.data;
-      setUser(user);
-      setIsLoading(false);
-
+      let response = await axios.post('/api/v1/auth/login', { email, password }, { withCredentials: true });
+      const { data } = response.data;
+      if (data?.user) {
+        setUser(data.user);
+      }
     } catch (error) {
-      setIsLoading(false);
       throw error;
     }
   };
 
   const register = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
-      // api/v1/auth/register
-      let response = await axios.post('/api/v1/auth/register', { email, password });
+      let response = await axios.post('/api/v1/auth/register', { email, password }, { withCredentials: true });
+      const { data } = response.data;
+      if (data?.user) {
+        setUser(data.user);
+      } await axios.post('/api/v1/auth/register', { email, password });
       const { user } = response.data;
       setUser(user);
-
     } catch (error) {
-      setIsLoading(false);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-
-
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call backend logout endpoint to clear cookie
+      await axios.post('/api/v1/auth/logout', {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+    }
     localStorage.removeItem('auth_token');
     setUser(null);
   };

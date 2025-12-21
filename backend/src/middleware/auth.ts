@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyJWT, extractTokenFromHeader, JWTPayload } from '../utils/auth';
+import { verifyJWT, JWTPayload } from '../utils/auth';
 
 // Extend Express Request interface to include user
 declare global {
@@ -29,8 +29,8 @@ export async function authenticateJWT(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Extract token from Authorization header
-    const token = extractTokenFromHeader(req.headers.authorization);
+    // Extract token from cookies
+    const token = req.cookies?.token;
     
     if (!token) {
       res.status(401).json({
@@ -85,7 +85,7 @@ export async function optionalAuth(
   next: NextFunction
 ): Promise<void> {
   try {
-    const token = extractTokenFromHeader(req.headers.authorization);
+    const token = req.cookies?.token;
     
     if (token) {
       try {
