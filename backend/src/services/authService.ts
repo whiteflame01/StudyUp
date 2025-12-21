@@ -41,15 +41,12 @@ export class AuthService {
       throw new Error('User with this email already exists');
     }
 
-    // Generate username from email (before @ symbol)
     let username = generateUsername();
 
-    // Ensure username is unique
     while (await prisma.user.findUnique({ where: { username } })) {
       username = generateUsername();
     }
 
-    // Hash password
     const passwordHash = await hashPassword(validatedInput.password);
 
     // Create user
@@ -61,14 +58,12 @@ export class AuthService {
       },
     });
 
-    // Generate JWT token
-    const token = generateJWT({
-      userId: user.id,
-      email: user.email,
-    });
-
     // Return user without password hash
     const { password: _, ...userWithoutPassword } = user;
+
+    const token = generateJWT({
+      userWithoutPassword
+    });
 
     return {
       user: userWithoutPassword,
@@ -100,8 +95,15 @@ export class AuthService {
 
     // Generate JWT token
     const token = generateJWT({
-      userId: user.id,
-      email: user.email,
+      userWithoutPassword: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
     });
 
     // Return user without password hash

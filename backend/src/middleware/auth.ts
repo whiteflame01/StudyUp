@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyJWT, extractTokenFromHeader, JWTPayload } from '../utils/auth';
+import { verifyJWT, extractTokenFromHeader} from '../utils/auth';
 import { AuthService } from '../services/authService';
 
 // Extend Express Request interface to include user
@@ -9,11 +9,9 @@ declare global {
       user?: {
         id: string;
         email: string;
-        name: string;
         username: string;
-        emailVerified: boolean;
+        isSetup: boolean;
         createdAt: Date;
-        updatedAt: Date;
       };
     }
   }
@@ -31,8 +29,8 @@ export async function authenticateJWT(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Extract token from Authorization header
-    const token = extractTokenFromHeader(req.headers.authorization);
+    // Extract token from cookies or Authorization header
+    const token = req.cookies?.token || extractTokenFromHeader(req.headers.authorization);
     
     if (!token) {
       res.status(401).json({
@@ -54,8 +52,8 @@ export async function authenticateJWT(
       return;
     }
 
-    // Get user from database
-    const user = await authService.getUserById(decoded.userId);
+    // Extract user from decoded token
+    const user = decoded.userWithoutPassword;
     if (!user) {
       res.status(401).json({
         error: 'Authentication failed',
@@ -82,16 +80,16 @@ export async function authenticateJWT(
  */
 export async function optionalAuth(
   req: Request,
-  res: Response,
+  _: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const token = extractTokenFromHeader(req.headers.authorization);
+    const token = req.cookies?.token || extractTokenFromHeader(req.headers.authorization);
     
     if (token) {
       try {
         const decoded = verifyJWT(token);
-        const user = await authService.getUserById(decoded.userId);
+        const user = decoded.userWithoutPassword;
         if (user) {
           req.user = user;
         }

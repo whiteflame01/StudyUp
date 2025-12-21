@@ -1,12 +1,8 @@
 export interface User {
   id: string;
-  name: string;
   username: string;
   email: string;
-  avatar?: string;
-  profile?: Profile;
-  emailVerified: boolean;
-  profileSetupComplete: boolean;
+  isSetup: boolean;
   createdAt: Date;
 }
 

@@ -6,10 +6,6 @@ import { ADJECTIVES, NOUNS } from './words';
 // Password validation schema
 export const passwordSchema = z.string()
   .min(8, 'Password must be at least 8 characters')
-  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-  .regex(/\d/, 'Password must contain at least one number')
-  .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character');
 
 // Email validation schema
 export const emailSchema = z.string().email('Invalid email format');
@@ -28,8 +24,15 @@ export const loginSchema = z.object({
 
 // JWT payload interface
 export interface JWTPayload {
-  userId: string;
-  email: string;
+  userWithoutPassword: {
+    id: string;
+    email: string;
+    username: string;
+    name: string | null;
+    emailVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
   iat?: number;
   exp?: number;
 }
@@ -52,14 +55,15 @@ export async function comparePassword(password: string, hash: string): Promise<b
 /**
  * Generate a JWT token with 24-hour expiry
  */
-export function generateJWT(payload: { userId: string; email: string }): string {
-  const secret = process.env.JWT_SECRET;
+export function generateJWT(payload: { userWithoutPassword: any }): string {
+  const secret = process.env.JWT_SECRET as string;
   if (!secret) {
     throw new Error('JWT_SECRET environment variable is not set');
   }
 
+  const expiresIn: string = process.env.JWT_EXPIRES_IN || '24h';
   return jwt.sign(payload, secret, {
-    expiresIn: '24h',
+    expiresIn,
     issuer: 'study-up-platform',
     audience: 'study-up-users',
   });
@@ -69,7 +73,7 @@ export function generateJWT(payload: { userId: string; email: string }): string 
  * Verify and decode a JWT token
  */
 export function verifyJWT(token: string): JWTPayload {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET as string;
   if (!secret) {
     throw new Error('JWT_SECRET environment variable is not set');
   }
@@ -78,7 +82,7 @@ export function verifyJWT(token: string): JWTPayload {
     const decoded = jwt.verify(token, secret, {
       issuer: 'study-up-platform',
       audience: 'study-up-users',
-    }) as JWTPayload;
+    });
     
     return decoded;
   } catch (error) {

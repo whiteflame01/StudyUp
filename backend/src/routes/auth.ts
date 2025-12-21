@@ -15,10 +15,19 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     const input: RegisterInput = req.body;
     const result = await authService.register(input);
     
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+    
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
-      data: result,
+      data: {
+        user: result.user,
+      },
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -60,11 +69,20 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const input: LoginInput = req.body;
     const result = await authService.login(input);
+
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
     
     res.status(200).json({
       success: true,
       message: 'Login successful',
-      data: result,
+      data: {
+        user:result.user
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
