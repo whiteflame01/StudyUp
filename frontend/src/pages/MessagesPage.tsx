@@ -1,132 +1,119 @@
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Clock } from 'lucide-react';
+import { ChatWindow } from '@/components/chat/ChatWindow';
+import { mockUsers, mockMessages, currentUser } from '@/data/mockData';
+import { User, Message } from '@/types';
+import { ConversationPanel } from '@/components/chat/ConversationPanel';
+import { ChatPanel } from '@/components/chat/ChatPanel';
 
-interface Message {
-  id: string;
+interface Conversation {
   userId: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  similarity: number;
-  online: boolean;
+  user: User;
+  lastMessage: Message;
+  unreadCount: number;
+  lastActivity: Date;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    userId: 'User_8492',
-    lastMessage: 'Thanks for the help with quantum mechanics!',
-    timestamp: '5m ago',
-    unread: 2,
-    similarity: 98,
-    online: true
-  },
-  {
-    id: '2',
-    userId: 'User_3721',
-    lastMessage: 'Do you want to study together tomorrow?',
-    timestamp: '1h ago',
-    unread: 0,
-    similarity: 96,
-    online: true
-  },
-  {
-    id: '3',
-    userId: 'User_5634',
-    lastMessage: 'I found a great resource for organic chemistry',
-    timestamp: '3h ago',
-    unread: 1,
-    similarity: 94,
-    online: false
-  },
-  {
-    id: '4',
-    userId: 'User_2193',
-    lastMessage: 'Let me know if you need more practice problems',
-    timestamp: '1d ago',
-    unread: 0,
-    similarity: 92,
-    online: false
-  },
-];
-
 export default function MessagesPage() {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Create conversations from messages and users
+  useEffect(() => {
+    const conversationMap = new Map<string, Conversation>();
+    
+    // Process messages to create conversations
+    mockMessages.forEach(message => {
+      const otherUserId = message.senderId === currentUser.id ? message.receiverId : message.senderId;
+      const user = mockUsers.find(u => u.id === otherUserId);
+      
+      if (user) {
+        const existing = conversationMap.get(otherUserId);
+        if (!existing || message.sentAt > existing.lastMessage.sentAt) {
+          conversationMap.set(otherUserId, {
+            userId: otherUserId,
+            user,
+            lastMessage: message,
+            unreadCount: message.receiverId === currentUser.id && !message.readAt ? 1 : 0,
+            lastActivity: message.sentAt,
+          });
+        }
+      }
+    });
+
+    // Add additional users without messages for demo purposes
+    mockUsers.slice(0, 5).forEach((user, idx) => {
+      if (!conversationMap.has(user.id)) {
+        conversationMap.set(user.id, {
+          userId: user.id,
+          user,
+          lastMessage: mockMessages[idx % mockMessages.length],
+          unreadCount: idx === 0 ? 2 : idx === 2 ? 1 : 0,
+          lastActivity: new Date(Date.now() - idx * 3600000), // Stagger times
+        });
+      }
+    });
+
+    const conversationList = Array.from(conversationMap.values())
+      .sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime());
+    
+    setConversations(conversationList);
+  }, []);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserId(userId);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleBackToList = () => {
+    setSelectedUserId(null);
+  };
+
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-10">
-        <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-        <p className="text-sm text-muted-foreground">Direct messages with matched users</p>
-      </div>
+    <div className="h-full flex">
+      {/* Two-panel layout with responsive behavior */}
+      <div className="flex w-full h-full">
+        {/* Conversation Panel - Left side */}
+        <div className={`
+          ${isMobile ? (selectedUserId ? 'hidden' : 'w-full') : 'w-80 border-r'}
+          flex-shrink-0 bg-card
+        `}>
+          <ConversationPanel
+            conversations={conversations}
+            selectedUserId={selectedUserId}
+            searchQuery={searchQuery}
+            onSelectUser={handleSelectUser}
+            onSearchChange={handleSearchChange}
+          />
+        </div>
 
-      {/* Messages List */}
-      <div className="divide-y divide-border">
-        {mockMessages.length > 0 ? (
-          mockMessages.map((message) => (
-            <div
-              key={message.id}
-              className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
-                      {message.userId.split('_')[1].slice(0, 2)}
-                    </span>
-                  </div>
-                  {message.online && (
-                    <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-background rounded-full" />
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-foreground">{message.userId}</span>
-                      <span className="text-xs text-green-400 font-semibold">
-                        {message.similarity}% match
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {message.timestamp}
-                      </span>
-                      {message.unread > 0 && (
-                        <Badge variant="destructive" className="h-5 px-2 text-xs">
-                          {message.unread}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground truncate">{message.lastMessage}</p>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="p-12 text-center">
-            <div className="text-muted-foreground mb-2">
-              <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <h3 className="font-semibold text-foreground mb-1">No messages yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Start chatting with users from your feed
-            </p>
-          </div>
-        )}
+        {/* Chat Panel - Right side */}
+        <div className={`
+          ${isMobile ? (selectedUserId ? 'w-full' : 'hidden') : 'flex-1'}
+          bg-background
+        `}>
+          <ChatPanel
+            selectedUserId={selectedUserId}
+            onBack={isMobile ? handleBackToList : undefined}
+          />
+        </div>
       </div>
-
-      {/* Info Card */}
-      <Card className="m-4 p-4 bg-muted border-border">
-        <h3 className="font-semibold text-sm text-foreground mb-2">Anonymous Messaging</h3>
-        <p className="text-xs text-muted-foreground">
-          All conversations are anonymous. Users only see your User ID, never your real identity or email.
-        </p>
-      </Card>
     </div>
   );
 }

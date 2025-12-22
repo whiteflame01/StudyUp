@@ -6,6 +6,9 @@ export const currentUser: User = {
   username: 'alexj',
   email: 'alex@example.com',
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+  emailVerified: true,
+  profileSetupComplete: true,
+  online: true,
   profile: {
     id: 'profile-1',
     userId: 'user-1',
@@ -36,6 +39,9 @@ export const mockUsers: User[] = [
     username: 'sarahc',
     email: 'sarah@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: true,
     profile: {
       id: 'profile-2',
       userId: 'user-2',
@@ -55,6 +61,9 @@ export const mockUsers: User[] = [
     username: 'marcusw',
     email: 'marcus@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: false,
     profile: {
       id: 'profile-3',
       userId: 'user-3',
@@ -74,6 +83,9 @@ export const mockUsers: User[] = [
     username: 'emilyr',
     email: 'emily@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: true,
     profile: {
       id: 'profile-4',
       userId: 'user-4',
@@ -93,6 +105,9 @@ export const mockUsers: User[] = [
     username: 'jamesp',
     email: 'james@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: false,
     profile: {
       id: 'profile-5',
       userId: 'user-5',
@@ -112,6 +127,9 @@ export const mockUsers: User[] = [
     username: 'oliviak',
     email: 'olivia@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: true,
     profile: {
       id: 'profile-6',
       userId: 'user-6',
@@ -131,6 +149,9 @@ export const mockUsers: User[] = [
     username: 'davidn',
     email: 'david@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: false,
     profile: {
       id: 'profile-7',
       userId: 'user-7',
@@ -150,6 +171,9 @@ export const mockUsers: User[] = [
     username: 'sophiam',
     email: 'sophia@example.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia',
+    emailVerified: true,
+    profileSetupComplete: true,
+    online: true,
     profile: {
       id: 'profile-8',
       userId: 'user-8',
@@ -220,36 +244,96 @@ export const mockConnections: Connection[] = [
 ];
 
 export const mockMessages: Message[] = [
+  // Messages from 3 days ago
   {
     id: 'msg-1',
     senderId: 'user-2',
     receiverId: 'user-1',
     content: 'Hey Alex! Ready for our calculus study session tomorrow?',
-    sentAt: new Date('2024-11-10T14:30:00'),
-    readAt: new Date('2024-11-10T14:35:00'),
+    sentAt: new Date('2024-12-18T14:30:00'),
+    readAt: new Date('2024-12-18T14:35:00'),
   },
   {
     id: 'msg-2',
     senderId: 'user-1',
     receiverId: 'user-2',
     content: "Absolutely! I've prepared some practice problems for us to work through.",
-    sentAt: new Date('2024-11-10T14:36:00'),
-    readAt: new Date('2024-11-10T14:40:00'),
+    sentAt: new Date('2024-12-18T14:36:00'),
+    readAt: new Date('2024-12-18T14:40:00'),
   },
+  // Messages from yesterday
   {
     id: 'msg-3',
     senderId: 'user-2',
     receiverId: 'user-1',
-    content: 'Perfect! I found some great resources on integration techniques. Sending them over now.',
-    sentAt: new Date('2024-11-10T14:42:00'),
+    content: 'Perfect! I found some great resources on integration techniques.',
+    sentAt: new Date('2024-12-20T14:42:00'),
   },
   {
     id: 'msg-4',
+    senderId: 'user-2',
+    receiverId: 'user-1',
+    content: 'Sending them over now.',
+    sentAt: new Date('2024-12-20T14:43:00'),
+  },
+  {
+    id: 'msg-5',
+    senderId: 'user-2',
+    receiverId: 'user-1',
+    content: 'Let me know what you think!',
+    sentAt: new Date('2024-12-20T14:44:00'),
+  },
+  {
+    id: 'msg-6',
+    senderId: 'user-1',
+    receiverId: 'user-2',
+    content: 'Thanks! These look really helpful.',
+    sentAt: new Date('2024-12-20T15:00:00'),
+  },
+  {
+    id: 'msg-7',
+    senderId: 'user-1',
+    receiverId: 'user-2',
+    content: 'I especially like the step-by-step examples.',
+    sentAt: new Date('2024-12-20T15:01:00'),
+  },
+  // Messages from today
+  {
+    id: 'msg-8',
+    senderId: 'user-2',
+    receiverId: 'user-1',
+    content: 'Good morning! How did the practice problems go?',
+    sentAt: new Date('2024-12-21T09:15:00'),
+  },
+  {
+    id: 'msg-9',
+    senderId: 'user-1',
+    receiverId: 'user-2',
+    content: 'Really well! I think I understand integration by parts much better now.',
+    sentAt: new Date('2024-12-21T09:30:00'),
+  },
+  {
+    id: 'msg-10',
+    senderId: 'user-1',
+    receiverId: 'user-2',
+    content: 'The examples you shared were perfect.',
+    sentAt: new Date('2024-12-21T09:31:00'),
+  },
+  {
+    id: 'msg-11',
+    senderId: 'user-1',
+    receiverId: 'user-2',
+    content: 'Want to tackle some more advanced problems today?',
+    sentAt: new Date('2024-12-21T09:32:00'),
+  },
+  // Messages from different conversation
+  {
+    id: 'msg-12',
     senderId: 'user-3',
     receiverId: 'user-1',
     content: 'Just finished the Python project we discussed. Want to review it together?',
-    sentAt: new Date('2024-11-09T18:15:00'),
-    readAt: new Date('2024-11-09T19:00:00'),
+    sentAt: new Date('2024-12-20T18:15:00'),
+    readAt: new Date('2024-12-20T19:00:00'),
   },
 ];
 

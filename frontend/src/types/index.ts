@@ -7,6 +7,7 @@ export interface User {
   profile?: Profile;
   emailVerified: boolean;
   profileSetupComplete: boolean;
+  online?: boolean;
   createdAt: Date;
 }
 

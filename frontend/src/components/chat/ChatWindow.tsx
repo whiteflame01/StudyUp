@@ -70,6 +70,20 @@ export function ChatWindow({ userId }: ChatWindowProps) {
     return !isSameDay(msg.sentAt, messages[idx - 1].sentAt);
   };
 
+  const shouldGroupMessage = (msg: Message, idx: number) => {
+    if (idx === 0) return false;
+    
+    const prevMsg = messages[idx - 1];
+    const timeDiff = msg.sentAt.getTime() - prevMsg.sentAt.getTime();
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+    
+    return (
+      msg.senderId === prevMsg.senderId &&
+      timeDiff <= fiveMinutes &&
+      isSameDay(msg.sentAt, prevMsg.sentAt)
+    );
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -106,10 +120,11 @@ export function ChatWindow({ userId }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin">
         {messages.map((msg, idx) => {
           const isCurrentUser = msg.senderId === currentUser.id;
           const showDivider = shouldShowDateDivider(msg, idx);
+          const isGrouped = shouldGroupMessage(msg, idx);
 
           return (
             <div key={msg.id}>
@@ -125,9 +140,10 @@ export function ChatWindow({ userId }: ChatWindowProps) {
 
               <div className={cn(
                 'flex gap-2',
-                isCurrentUser ? 'justify-end' : 'justify-start'
+                isCurrentUser ? 'justify-end' : 'justify-start',
+                isGrouped ? 'mt-1' : 'mt-4'
               )}>
-                {!isCurrentUser && (
+                {!isCurrentUser && !isGrouped && (
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={user.avatar} alt={user.name} />
                     <AvatarFallback className="text-xs">
@@ -136,11 +152,23 @@ export function ChatWindow({ userId }: ChatWindowProps) {
                   </Avatar>
                 )}
                 
+                {!isCurrentUser && isGrouped && (
+                  <div className="h-8 w-8 shrink-0" />
+                )}
+                
                 <div className={cn(
                   'max-w-[70%] rounded-2xl px-4 py-2.5',
                   isCurrentUser
-                    ? 'bg-primary text-primary-foreground rounded-br-md'
-                    : 'bg-muted text-foreground rounded-bl-md'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-foreground',
+                  // Adjust border radius for grouped messages
+                  isCurrentUser && isGrouped
+                    ? 'rounded-br-md rounded-tr-md'
+                    : isCurrentUser
+                    ? 'rounded-br-md'
+                    : !isCurrentUser && isGrouped
+                    ? 'rounded-bl-md rounded-tl-md'
+                    : 'rounded-bl-md'
                 )}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   <div className={cn(
