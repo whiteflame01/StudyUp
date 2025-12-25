@@ -2,30 +2,59 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { postsApi } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 export function CreatePost() {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
+    if (contentRef.current) {
+      contentRef.current.style.height = 'auto';
+      const scrollHeight = contentRef.current.scrollHeight;
       const lineHeight = 20; // approximate line height in pixels
       const maxHeight = lineHeight * 4; // 4 lines max
-      textareaRef.current.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+      contentRef.current.style.height = Math.min(scrollHeight, maxHeight) + 'px';
     }
   }, [content]);
 
-  const handleSubmit = () => {
-    if (!content.trim()) return;
+  const handleSubmit = async () => {
+    if (!title.trim() || !content.trim()) return;
     
-    // TODO: Implement post creation API call
-    console.log('Creating post:', content);
-    
-    // Clear the textarea
-    setContent('');
+    setIsSubmitting(true);
+    try {
+      await postsApi.createPost({
+        title: title.trim(),
+        content: content.trim(),
+      });
+
+      // Clear the form
+      setTitle('');
+      setContent('');
+      
+      toast({
+        title: 'Success',
+        description: 'Your post has been created!',
+      });
+
+      // Refresh the feed (you can use a callback prop or state management)
+      window.location.reload(); // Simple solution for now
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create post. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!user) return null;
@@ -40,8 +69,17 @@ export function CreatePost() {
         </Avatar>
         
         <div className="flex-1">
+          <input
+            ref={titleRef}
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={200}
+            className="w-full resize-none border-0 focus:outline-none focus:ring-0 text-sm font-semibold placeholder:text-gray-400 placeholder:font-normal mb-1"
+          />
           <textarea
-            ref={textareaRef}
+            ref={contentRef}
             placeholder="What are you studying?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -58,10 +96,10 @@ export function CreatePost() {
             <Button 
             size="sm" 
             onClick={handleSubmit}
-            disabled={!content.trim()}
+            disabled={!title.trim() || !content.trim() || isSubmitting}
             className="h-7 px-4 text-xs rounded-full"
             >
-            Post
+            {isSubmitting ? 'Posting...' : 'Post'}
             </Button>
         </div>
         </div>

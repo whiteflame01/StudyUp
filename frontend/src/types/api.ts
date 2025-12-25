@@ -39,6 +39,57 @@ export interface RegisterRequest {
   name: string;
 }
 
+// Post types
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  topic?: string;
+  createdAt: string;
+  updatedAt: string;
+  authorId: string;
+  author: {
+    id: string;
+    username: string;
+    email: string;
+    profile?: {
+      avatarUrl?: string;
+      college?: string;
+      major?: string;
+    };
+  };
+  _count?: {
+    comments: number;
+  };
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  topic?: string;
+}
+
+export interface CreatePostResponse {
+  success: boolean;
+  message: string;
+  data: {
+    post: Post;
+  };
+}
+
+export interface GetPostsResponse {
+  success: boolean;
+  data: {
+    posts: Post[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  };
+}
+
 // Connection types
 export interface Connection {
   id: string;

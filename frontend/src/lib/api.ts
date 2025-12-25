@@ -100,3 +100,28 @@ export const clearAuthToken = () => {
 export const getAuthToken = (): string | null => {
   return localStorage.getItem('auth_token');
 };
+
+// ============ Posts API ============
+import type { CreatePostRequest, CreatePostResponse, GetPostsResponse } from '@/types/api';
+
+export const postsApi = {
+  // Create a new post
+  createPost: async (data: CreatePostRequest): Promise<CreatePostResponse> => {
+    return apiClient.post<CreatePostResponse>('/posts', data);
+  },
+
+  // Get all posts with pagination
+  getPosts: async (page: number = 1, limit: number = 20): Promise<GetPostsResponse> => {
+    return apiClient.get<GetPostsResponse>(`/posts?page=${page}&limit=${limit}`);
+  },
+
+  // Get a single post by ID
+  getPostById: async (id: string) => {
+    return apiClient.get(`/posts/${id}`);
+  },
+
+  // Delete a post
+  deletePost: async (id: string) => {
+    return apiClient.delete(`/posts/${id}`);
+  },
+};
