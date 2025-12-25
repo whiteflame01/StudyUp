@@ -9,6 +9,7 @@ import prisma from './config/database';
 import authRoutes from './routes/auth';
 import postsRoutes from './routes/posts';
 import usersRoutes from './routes/users';
+import chatsRoutes from './routes/chats';
 
 // Load environment variables
 dotenv.config();
@@ -69,6 +70,7 @@ app.get('/health', async (_req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/posts', postsRoutes);
 app.use('/api/v1/users', usersRoutes);
+app.use('/api/v1/chats', chatsRoutes);
 
 // API info endpoint
 app.get('/', (_req, res) => {
@@ -81,7 +83,8 @@ app.get('/', (_req, res) => {
       api: '/api/v1',
       auth: '/api/v1/auth',
       posts: '/api/v1/posts',
-      users: '/api/v1/users'
+      users: '/api/v1/users',
+      chats: '/api/v1/chats'
     },
     message: 'Welcome to Study Up Platform API.'
   });
@@ -127,14 +130,42 @@ io.on('connection', (socket) => {
   });
 
   // Handle sending messages
-  socket.on('message:send', ({ chatId, message }) => {
-    console.log(`💬 Message sent in chat ${chatId}:`, message);
+  socket.on('message:send', async ({ chatId, content, receiverId }) => {
+    const senderId = socket.data.userId;
     
-    // Broadcast the message to everyone in the chat room except the sender
-    socket.to(`chat:${chatId}`).emit('message:new', message);
-    
-    // Optionally, you can also emit to the sender for confirmation
-    // socket.emit('message:sent', { success: true, messageId: message.id });
+    if (!senderId || !content || !chatId) {
+      console.error('Invalid message data:', { senderId, content, chatId });
+      return;
+    }
+
+    try {
+      // Save message to database
+      const message = await prisma.message.create({
+        data: {
+          content: content.trim(),
+          chatId,
+          senderId,
+          receiverId,
+        },
+      });
+
+      // Update chat's updatedAt
+      await prisma.chat.update({
+        where: { id: chatId },
+        data: { updatedAt: new Date() },
+      });
+
+      console.log(`💬 Message saved to DB:`, message.id);
+      
+      // Broadcast the message to everyone in the chat room
+      io.to(`chat:${chatId}`).emit('message:new', message);
+    } catch (error) {
+      console.error('Error saving message:', error);
+      socket.emit('message:error', { 
+        error: 'Failed to send message',
+        chatId 
+      });
+    }
   });
 
   // Handle disconnection

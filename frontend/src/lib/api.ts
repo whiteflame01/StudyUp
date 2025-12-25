@@ -140,3 +140,33 @@ export const usersApi = {
     return apiClient.get<GetUserResponse>(`/users/${id}`);
   },
 };
+
+// ============ Chats API ============
+import type { GetChatsResponse, GetChatResponse, GetMessagesResponse, SendMessageRequest, SendMessageResponse } from '@/types/api';
+
+export const chatsApi = {
+  // Get all chats for current user
+  getChats: async (): Promise<GetChatsResponse> => {
+    return apiClient.get<GetChatsResponse>('/chats');
+  },
+
+  // Get or create a chat with a specific user
+  getChatWithUser: async (userId: string): Promise<GetChatResponse> => {
+    return apiClient.get<GetChatResponse>(`/chats/${userId}`);
+  },
+
+  // Get messages in a chat
+  getMessages: async (chatId: string): Promise<GetMessagesResponse> => {
+    return apiClient.get<GetMessagesResponse>(`/chats/${chatId}/messages`);
+  },
+
+  // Send a message
+  sendMessage: async (chatId: string, data: SendMessageRequest): Promise<SendMessageResponse> => {
+    return apiClient.post<SendMessageResponse>(`/chats/${chatId}/messages`, data);
+  },
+
+  // Mark message as read
+  markAsRead: async (chatId: string, messageId: string): Promise<void> => {
+    return apiClient.patch(`/chats/${chatId}/messages/${messageId}/read`);
+  },
+};

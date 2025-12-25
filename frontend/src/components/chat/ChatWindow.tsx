@@ -1,20 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Send, 
   MoreVertical, 
   Check, 
   CheckCheck,
   Wifi,
-  WifiOff
+  WifiOff,
+  Loader2
 } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
-import { mockUsers, mockMessages, currentUser } from '@/data/mockData';
-import { Message } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
+import { chatsApi, usersApi } from '@/lib/api';
+import { ChatMessage } from '@/types/api';
 
 interface ChatWindowProps {
   userId: string;
@@ -23,19 +25,40 @@ interface ChatWindowProps {
 
 export function ChatWindow({ userId, onBack }: ChatWindowProps) {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [chatId, setChatId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const { user: currentAuthUser } = useAuth();
   const { socket, connected, joinChat, leaveChat, startTyping, stopTyping, on, off, isUserOnline } = useSocket();
+  const queryClient = useQueryClient();
 
-  // Find the specific user we are chatting with
-  const user = mockUsers.find((u) => u.id === userId) || mockUsers[0];
-  
-  // Generate chat ID (sorted to ensure consistency)
-  const chatId = [currentAuthUser?.id, userId].sort().join('-');
+  // Fetch or create chat with this user
+  const { data: chatData, isLoading: isChatLoading } = useQuery({
+    queryKey: ['chat', userId],
+    queryFn: () => chatsApi.getChatWithUser(userId),
+    enabled: !!userId && !!currentAuthUser,
+  });
+
+  // Fetch user details
+  const { data: userData, isLoading: isUserLoading } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => usersApi.getUserById(userId),
+    enabled: !!userId,
+  });
+
+  // Load messages when chat is ready
+  useEffect(() => {
+    if (chatData?.data.chat) {
+      setChatId(chatData.data.chatId);
+      setMessages(chatData.data.chat.messages || []);
+    }
+  }, [chatData]);
+
+  const user = userData?.data.user;
+  const isLoading = isChatLoading || isUserLoading;
 
   // Check if the other user is online
   const userOnline = isUserOnline(userId);
@@ -50,7 +73,7 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
 
   // WebSocket: Join and leave chat room
   useEffect(() => {
-    if (!socket || !connected) return;
+    if (!socket || !connected || !chatId) return;
 
     console.log(`🔗 Joining chat room: ${chatId}`);
     joinChat(chatId);
@@ -65,9 +88,12 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
   useEffect(() => {
     if (!socket || !connected) return;
 
-    const handleNewMessage = (newMessage: Message) => {
+    const handleNewMessage = (newMessage: ChatMessage) => {
       console.log('📨 New message received:', newMessage);
       setMessages((prev) => [...prev, newMessage]);
+      
+      // Invalidate chats query to update sidebar
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
     };
 
     const handleTypingStart = ({ userId: typingUserId }: { userId: string; chatId: string }) => {
@@ -94,24 +120,15 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
   }, [socket, connected, userId, on, off]);
 
   const handleSend = () => {
-    if (!message.trim() || !socket || !connected || !currentAuthUser) return;
-
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: currentAuthUser.id,
-      receiverId: userId,
-      content: message,
-      sentAt: new Date(),
-    };
+    if (!message.trim() || !socket || !connected || !currentAuthUser || !chatId) return;
 
     // Emit message through WebSocket
     socket.emit('message:send', {
       chatId,
-      message: newMessage,
+      content: message.trim(),
+      receiverId: userId,
     });
 
-    // Optimistically add to local state
-    setMessages((prev) => [...prev, newMessage]);
     setMessage('');
     
     // Stop typing indicator
@@ -153,10 +170,10 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
   };
 
   // Helper: Determine if we should show a "Today" or "Date" divider
-  const shouldShowDateDivider = (msg: Message, idx: number) => {
+  const shouldShowDateDivider = (msg: ChatMessage, idx: number) => {
     if (idx === 0) return true;
     const prevMsg = messages[idx - 1];
-    return !isSameDay(new Date(msg.sentAt), new Date(prevMsg.sentAt));
+    return !isSameDay(new Date(msg.createdAt), new Date(prevMsg.createdAt));
   };
 
   // Helper: Format the divider text
@@ -167,6 +184,14 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background">
+      {isLoading && (
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      )}
+
+      {!isLoading && user && (
+        <>
       {/* Header */}
       <div className="p-2 sm:p-3 border-b flex items-center justify-between bg-card">
         <div className="flex items-center gap-2">
@@ -182,11 +207,19 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
               </svg>
             </Button>
           )}
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-medium">
-            {user.username.substring(0, 2).toUpperCase()}
-          </div>
+          {user.profile?.avatarUrl ? (
+            <img 
+              src={user.profile.avatarUrl} 
+              alt={user.username}
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-medium">
+              {user.username.substring(0, 2).toUpperCase()}
+            </div>
+          )}
           <div>
-            <p className="font-semibold text-xs sm:text-sm">{user.username}</p>
+            <p className="font-semibold text-xs sm:text-sm">@{user.username}</p>
             <div className="flex items-center gap-1.5">
               <div className={cn(
                 "h-1.5 w-1.5 rounded-full",
@@ -213,7 +246,7 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-3">
         {messages.map((msg, idx) => {
-          const isCurrentUser = msg.senderId === (currentAuthUser?.id || currentUser.id);
+          const isCurrentUser = msg.senderId === currentAuthUser?.id;
           const showDivider = shouldShowDateDivider(msg, idx);
 
           return (
@@ -222,7 +255,7 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
                 <div className="flex items-center gap-4 my-6">
                   <div className="flex-1 h-px bg-border" />
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                    {formatDateDivider(msg.sentAt)}
+                    {formatDateDivider(new Date(msg.createdAt))}
                   </span>
                   <div className="flex-1 h-px bg-border" />
                 </div>
@@ -254,7 +287,7 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
                     isCurrentUser ? 'text-primary-foreground' : 'text-muted-foreground'
                   )}>
                     <span className="text-[9px] sm:text-[10px]">
-                      {format(new Date(msg.sentAt), 'HH:mm')}
+                      {format(new Date(msg.createdAt), 'HH:mm')}
                     </span>
                     {isCurrentUser && (
                       msg.readAt ? (
@@ -287,13 +320,15 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
           
           <button 
             onClick={handleSend}
-            disabled={!message.trim() || !connected}
+            disabled={!message.trim() || !connected || !chatId}
             className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-lg sm:rounded-xl bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
           >
             <Send className="h-4 w-4" />
           </button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

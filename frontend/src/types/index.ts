@@ -46,9 +46,11 @@ export interface Message {
   senderId: string;
   receiverId: string;
   content: string;
+  chatId: string;
+  createdAt: Date | string;
+  readAt?: Date | string | null;
   attachments?: Attachment[];
-  sentAt: Date;
-  readAt?: Date;
+  sentAt?: Date;
 }
 
 export interface Attachment {

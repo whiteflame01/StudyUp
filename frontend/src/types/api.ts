@@ -72,6 +72,71 @@ export interface GetUserResponse {
   };
 }
 
+// Chat and Message types
+export interface ChatMessage {
+  id: string;
+  content: string;
+  chatId: string;
+  senderId: string;
+  receiverId: string;
+  createdAt: string;
+  readAt?: string | null;
+}
+
+export interface Chat {
+  id: string;
+  otherUser: {
+    id: string;
+    username: string;
+    email: string;
+    profile?: {
+      avatarUrl?: string;
+    };
+  };
+  lastMessage?: ChatMessage | null;
+  updatedAt: string;
+}
+
+export interface GetChatsResponse {
+  success: boolean;
+  data: {
+    chats: Chat[];
+  };
+}
+
+export interface GetChatResponse {
+  success: boolean;
+  data: {
+    chat: {
+      id: string;
+      user1Id: string;
+      user2Id: string;
+      createdAt: string;
+      updatedAt: string;
+      messages: ChatMessage[];
+    };
+    chatId: string;
+  };
+}
+
+export interface GetMessagesResponse {
+  success: boolean;
+  data: {
+    messages: ChatMessage[];
+  };
+}
+
+export interface SendMessageRequest {
+  content: string;
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  data: {
+    message: ChatMessage;
+  };
+}
+
 // Post types
 export interface Post {
   id: string;

@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 
 export default function MessagesPage() {
+  const location = useLocation();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  // Handle navigation from Explore page
+  useEffect(() => {
+    if (location.state?.selectedUserId) {
+      setSelectedUserId(location.state.selectedUserId);
+    }
+  }, [location.state]);
 
   return (
     <div className="h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] flex">

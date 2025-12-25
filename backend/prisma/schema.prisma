@@ -20,9 +20,13 @@ model User {
   createdAt DateTime @default(now())
 
   // Relations
-  profile   Profile? // One-to-One relation (Optional)
-  posts     Post[]
-  comments  Comment[]
+  profile          Profile? // One-to-One relation (Optional)
+  posts            Post[]
+  comments         Comment[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  chatsAsUser1     Chat[]    @relation("User1Chats")
+  chatsAsUser2     Chat[]    @relation("User2Chats")
 }
 
 model Profile {
@@ -66,4 +70,44 @@ model Comment {
   
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Two users in a chat (sorted by ID to ensure uniqueness)
+  user1Id   String
+  user1     User     @relation("User1Chats", fields: [user1Id], references: [id], onDelete: Cascade)
+  
+  user2Id   String
+  user2     User     @relation("User2Chats", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  readAt     DateTime?
+
+  chatId     String
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
 }

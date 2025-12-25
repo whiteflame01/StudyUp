@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Hash, Users, UserPlus, TrendingUp, Clock, Loader2 } from 'lucide-react';
+import { Hash, Users, UserPlus, TrendingUp, Clock, Loader2, MessageCircle } from 'lucide-react';
 import { usersApi } from '@/lib/api';
-import { UserWithProfile } from '@/types/api';
 import { useSocket } from '@/hooks/useSocket';
 
 interface Forum {
@@ -27,15 +27,6 @@ interface Group {
   topic: string;
 }
 
-interface User {
-  id: string;
-  userId: string;
-  similarity: number;
-  currentTopic: string;
-  studyStreak: number;
-  online: boolean;
-}
-
 const mockForums: Forum[] = [
   { id: '1', name: 'Quantum Physics Deep Dive', description: 'Advanced discussions on quantum mechanics and particle physics', members: 342, similarity: 98, posts: 1240, lastActive: '2m ago' },
   { id: '2', name: 'Linear Algebra Mastery', description: 'Matrix operations, eigenvalues, and vector spaces', members: 289, similarity: 96, posts: 890, lastActive: '15m ago' },
@@ -50,18 +41,10 @@ const mockGroups: Group[] = [
   { id: '4', name: 'Calculus Crushers', description: 'Intensive calculus study group', members: 10, similarity: 91, topic: 'Calculus' },
 ];
 
-const mockUsers: User[] = [
-  { id: '1', userId: 'User_8492', similarity: 98, currentTopic: 'Quantum Entanglement', studyStreak: 45, online: true },
-  { id: '2', userId: 'User_3721', similarity: 96, currentTopic: 'Matrix Eigenvalues', studyStreak: 32, online: true },
-  { id: '3', userId: 'User_5634', similarity: 94, currentTopic: 'Organic Reactions', studyStreak: 28, online: false },
-  { id: '4', userId: 'User_2193', similarity: 92, currentTopic: 'Optimization Problems', studyStreak: 21, online: true },
-  { id: '5', userId: 'User_7421', similarity: 91, currentTopic: 'Thermodynamics', studyStreak: 18, online: false },
-  { id: '6', userId: 'User_9156', similarity: 89, currentTopic: 'Differential Equations', studyStreak: 15, online: true },
-];
-
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<'forums' | 'groups' | 'users'>('forums');
   const { onlineUsers } = useSocket();
+  const navigate = useNavigate();
 
   // Fetch real users from the API
   const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useQuery({
@@ -69,6 +52,11 @@ export default function ExplorePage() {
     queryFn: () => usersApi.getUsers(),
     enabled: activeTab === 'users', // Only fetch when users tab is active
   });
+
+  const handleStartChat = (userId: string) => {
+    // Navigate to messages page with this user selected
+    navigate('/app/messages', { state: { selectedUserId: userId } });
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -264,8 +252,14 @@ export default function ExplorePage() {
                           📚 {user.profile.year}
                         </p>
                       )}
-                      <Button size="sm" variant="outline" className="w-full">
-                        Connect
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full gap-2"
+                        onClick={() => handleStartChat(user.id)}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Send Message
                       </Button>
                     </div>
                   </Card>
