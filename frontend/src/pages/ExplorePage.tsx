@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Hash, Users, UserPlus, TrendingUp, Clock } from 'lucide-react';
+import { Hash, Users, UserPlus, TrendingUp, Clock, Loader2 } from 'lucide-react';
+import { usersApi } from '@/lib/api';
+import { UserWithProfile } from '@/types/api';
+import { useSocket } from '@/hooks/useSocket';
 
 interface Forum {
   id: string;
@@ -57,6 +61,14 @@ const mockUsers: User[] = [
 
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<'forums' | 'groups' | 'users'>('forums');
+  const { onlineUsers } = useSocket();
+
+  // Fetch real users from the API
+  const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersApi.getUsers(),
+    enabled: activeTab === 'users', // Only fetch when users tab is active
+  });
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -177,45 +189,90 @@ export default function ExplorePage() {
       )}
 
       {/* Users Tab */}
+      {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="p-4">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Users with high similarity scores</p>
+            <p className="text-sm text-gray-600">Connect with study buddies</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {mockUsers.map((user) => (
-              <Card key={user.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-3">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                      <span className="text-white font-semibold text-lg">
-                        {user.userId.split('_')[1].slice(0, 2)}
-                      </span>
+
+          {isLoadingUsers && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          )}
+
+          {usersError && (
+            <div className="text-center py-12">
+              <p className="text-sm text-red-600">Failed to load users. Please try again.</p>
+            </div>
+          )}
+
+          {usersData && usersData.data.users.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-600">No users found yet.</p>
+            </div>
+          )}
+
+          {usersData && usersData.data.users.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {usersData.data.users.map((user) => {
+                const isOnline = onlineUsers.includes(user.id);
+                
+                return (
+                  <Card key={user.id} className="p-4 hover:shadow-md transition-shadow">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="relative mb-3">
+                        {user.profile?.avatarUrl ? (
+                          <img 
+                            src={user.profile.avatarUrl} 
+                            alt={user.username}
+                            className="h-16 w-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg">
+                              {user.username.substring(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        {isOnline && (
+                          <div className="absolute bottom-0 right-0 h-4 w-4 bg-green-500 border-2 border-white rounded-full" />
+                        )}
+                      </div>
+                      <div className="mb-2">
+                        <h3 className="font-semibold text-sm mb-1">@{user.username}</h3>
+                        {user.profile?.major && (
+                          <Badge variant="secondary" className="text-xs">
+                            {user.profile.major}
+                          </Badge>
+                        )}
+                      </div>
+                      {user.profile?.bio && (
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                          {user.profile.bio}
+                        </p>
+                      )}
+                      {user.profile?.college && (
+                        <p className="text-xs text-gray-500 mb-2">
+                          🎓 {user.profile.college}
+                        </p>
+                      )}
+                      {user.profile?.year && (
+                        <p className="text-xs text-gray-500 mb-3">
+                          📚 {user.profile.year}
+                        </p>
+                      )}
+                      <Button size="sm" variant="outline" className="w-full">
+                        Connect
+                      </Button>
                     </div>
-                    {user.online && (
-                      <div className="absolute bottom-0 right-0 h-4 w-4 bg-green-500 border-2 border-white rounded-full" />
-                    )}
-                  </div>
-                  <div className="mb-2">
-                    <h3 className="font-semibold text-sm mb-1">{user.userId}</h3>
-                    <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
-                      {user.similarity}% match
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-2">
-                    Currently studying: <span className="font-medium">{user.currentTopic}</span>
-                  </p>
-                  <p className="text-xs text-gray-500 mb-3">
-                    🔥 {user.studyStreak} day streak
-                  </p>
-                  <Button size="sm" variant="outline" className="w-full">
-                    Connect
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

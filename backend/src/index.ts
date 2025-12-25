@@ -8,6 +8,7 @@ import { Server } from 'socket.io';
 import prisma from './config/database';
 import authRoutes from './routes/auth';
 import postsRoutes from './routes/posts';
+import usersRoutes from './routes/users';
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,7 @@ app.get('/health', async (_req, res) => {
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/posts', postsRoutes);
+app.use('/api/v1/users', usersRoutes);
 
 // API info endpoint
 app.get('/', (_req, res) => {
@@ -78,7 +80,8 @@ app.get('/', (_req, res) => {
       health: '/health',
       api: '/api/v1',
       auth: '/api/v1/auth',
-      posts: '/api/v1/posts'
+      posts: '/api/v1/posts',
+      users: '/api/v1/users'
     },
     message: 'Welcome to Study Up Platform API.'
   });

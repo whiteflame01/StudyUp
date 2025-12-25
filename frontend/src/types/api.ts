@@ -39,6 +39,39 @@ export interface RegisterRequest {
   name: string;
 }
 
+// User with Profile
+export interface UserWithProfile {
+  id: string;
+  username: string;
+  email: string;
+  isSetup: boolean;
+  createdAt: string;
+  profile?: {
+    id: string;
+    bio?: string;
+    gender?: string;
+    avatarUrl?: string;
+    college?: string;
+    major?: string;
+    year?: string;
+  };
+}
+
+export interface GetUsersResponse {
+  success: boolean;
+  data: {
+    users: UserWithProfile[];
+    total: number;
+  };
+}
+
+export interface GetUserResponse {
+  success: boolean;
+  data: {
+    user: UserWithProfile;
+  };
+}
+
 // Post types
 export interface Post {
   id: string;

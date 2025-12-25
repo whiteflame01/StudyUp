@@ -125,3 +125,18 @@ export const postsApi = {
     return apiClient.delete(`/posts/${id}`);
   },
 };
+
+// ============ Users API ============
+import type { GetUsersResponse, GetUserResponse } from '@/types/api';
+
+export const usersApi = {
+  // Get all users
+  getUsers: async (): Promise<GetUsersResponse> => {
+    return apiClient.get<GetUsersResponse>('/users');
+  },
+
+  // Get a single user by ID
+  getUserById: async (id: string): Promise<GetUserResponse> => {
+    return apiClient.get<GetUserResponse>(`/users/${id}`);
+  },
+};
