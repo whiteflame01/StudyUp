@@ -5,7 +5,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { postsApi } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
-export function CreatePost() {
+import type { Post } from '@/types/api';
+
+interface CreatePostProps {
+  onPostCreated?: (post: Post) => void;
+}
+
+export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +35,7 @@ export function CreatePost() {
     
     setIsSubmitting(true);
     try {
-      await postsApi.createPost({
+      const response = await postsApi.createPost({
         title: title.trim(),
         content: content.trim(),
       });
@@ -43,8 +49,10 @@ export function CreatePost() {
         description: 'Your post has been created!',
       });
 
-      // Refresh the feed (you can use a callback prop or state management)
-      window.location.reload(); // Simple solution for now
+      // Call the callback with the newly created post
+      if (onPostCreated && response.data.post) {
+        onPostCreated(response.data.post);
+      }
     } catch (error) {
       console.error('Error creating post:', error);
       toast({
