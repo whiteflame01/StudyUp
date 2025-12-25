@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard,
@@ -156,18 +156,17 @@ export function AppSidebar() {
               collapsed && 'justify-center p-2'
             )}>
               <Avatar className="h-9 w-9 border-2 border-sidebar-primary">
-                <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {user.username.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex-1 min-w-0 animate-fade-in">
                   <p className="text-sm font-medium text-sidebar-foreground truncate">
-                    {user.name}
+                    @{user.username}
                   </p>
                   <p className="text-xs text-sidebar-foreground/60 truncate">
-                    @{user.username}
+                    {user.email}
                   </p>
                 </div>
               )}
