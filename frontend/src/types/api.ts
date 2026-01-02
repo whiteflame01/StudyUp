@@ -138,6 +138,22 @@ export interface SendMessageResponse {
 }
 
 // Post types
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  postId: string;
+  authorId: string;
+  author: {
+    id: string;
+    username: string;
+    profile?: {
+      avatarUrl?: string;
+      major?: string;
+    };
+  };
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -158,7 +174,9 @@ export interface Post {
   };
   _count?: {
     comments: number;
+    likes: number;
   };
+  isLiked?: boolean;
 }
 
 export interface CreatePostRequest {
@@ -185,6 +203,21 @@ export interface GetPostsResponse {
       limit: number;
       totalPages: number;
     };
+  };
+}
+
+export interface GetCommentsResponse {
+  success: boolean;
+  data: {
+    comments: Comment[];
+  };
+}
+
+export interface AddCommentResponse {
+  success: boolean;
+  message: string;
+  data: {
+    comment: Comment;
   };
 }
 

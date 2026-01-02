@@ -56,8 +56,8 @@ export default function MainPage() {
               asChild
             >
               <Link to="/app/chats">
-                <MessageCircle className="h-5 w-5" />
-                <span className="text-base">Chats</span>
+                <Users className="h-5 w-5" />
+                <span className="text-base">Forums</span>
               </Link>
             </Button>
 
@@ -67,7 +67,7 @@ export default function MainPage() {
               asChild
             >
               <Link to="/app/messages">
-                <Users className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" />
                 <span className="text-base">Messages</span>
               </Link>
             </Button>

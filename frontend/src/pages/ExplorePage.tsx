@@ -18,15 +18,6 @@ interface Forum {
   lastActive: string;
 }
 
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  members: number;
-  similarity: number;
-  topic: string;
-}
-
 const mockForums: Forum[] = [
   { id: '1', name: 'Quantum Physics Deep Dive', description: 'Advanced discussions on quantum mechanics and particle physics', members: 342, similarity: 98, posts: 1240, lastActive: '2m ago' },
   { id: '2', name: 'Linear Algebra Mastery', description: 'Matrix operations, eigenvalues, and vector spaces', members: 289, similarity: 96, posts: 890, lastActive: '15m ago' },
@@ -34,15 +25,8 @@ const mockForums: Forum[] = [
   { id: '4', name: 'Calculus Problem Solving', description: 'Integration, differentiation, and optimization problems', members: 567, similarity: 92, posts: 1800, lastActive: '1h ago' },
 ];
 
-const mockGroups: Group[] = [
-  { id: '1', name: 'QM Study Session', description: 'Weekly quantum mechanics problem-solving', members: 12, similarity: 97, topic: 'Quantum Mechanics' },
-  { id: '2', name: 'Algebra Warriors', description: 'Daily linear algebra practice', members: 8, similarity: 95, topic: 'Linear Algebra' },
-  { id: '3', name: 'Chem Lab Partners', description: 'Organic chemistry lab prep and review', members: 15, similarity: 93, topic: 'Chemistry' },
-  { id: '4', name: 'Calculus Crushers', description: 'Intensive calculus study group', members: 10, similarity: 91, topic: 'Calculus' },
-];
-
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState<'forums' | 'groups' | 'users'>('forums');
+  const [activeTab, setActiveTab] = useState<'forums' | 'users'>('forums');
   const { onlineUsers } = useSocket();
   const navigate = useNavigate();
 
@@ -74,15 +58,6 @@ export default function ExplorePage() {
           >
             <Hash className="h-4 w-4" />
             Forums
-          </Button>
-          <Button
-            variant={activeTab === 'groups' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('groups')}
-            className="gap-2"
-          >
-            <Users className="h-4 w-4" />
-            Groups
           </Button>
           <Button
             variant={activeTab === 'users' ? 'default' : 'outline'}
@@ -127,44 +102,6 @@ export default function ExplorePage() {
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {forum.lastActive}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <Button size="sm" className="ml-2">Join</Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Groups Tab */}
-      {activeTab === 'groups' && (
-        <div className="p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Study groups matched to your behavior</p>
-          </div>
-          {mockGroups.map((group) => (
-            <Card key={group.id} className="p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm">{group.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                        {group.similarity}% match
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{group.description}</p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <Badge variant="outline" className="text-xs">{group.topic}</Badge>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {group.members} members
                       </span>
                     </div>
                   </div>
@@ -275,7 +212,6 @@ export default function ExplorePage() {
         <h3 className="font-semibold text-sm mb-2">How Matching Works</h3>
         <p className="text-xs text-gray-600">
           {activeTab === 'forums' && 'Forums are ranked by how well their content matches your study patterns and interests.'}
-          {activeTab === 'groups' && 'Groups are matched based on your learning pace, study schedule, and topic preferences.'}
           {activeTab === 'users' && 'Users are ranked by behavioral similarity - study habits, learning tempo, and topic overlap.'}
         </p>
       </Card>

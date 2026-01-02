@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { 
   Heart,
-  MessageSquare,
-  Send,
-  MoreHorizontal
+  MessageSquare
 } from 'lucide-react';
+import { postsApi } from '@/lib/api';
+import { PostComments } from './PostComments';
 import type { Post } from '@/types/api';
 
 interface PostCardProps {
@@ -31,8 +32,33 @@ const formatTimestamp = (dateString: string) => {
 };
 
 export function PostCard({ post, isNew = false }: PostCardProps) {
-  const commentsCount = post._count?.comments || 0;
+  const [isLiked, setIsLiked] = useState(post.isLiked || false);
+  const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
+  const [isLiking, setIsLiking] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post._count?.comments || 0);
+  
   const authorInitials = post.author.username.substring(0, 2).toUpperCase();
+
+  const handleLike = async () => {
+    if (isLiking) return;
+    
+    setIsLiking(true);
+    try {
+      const response = await postsApi.toggleLike(post.id);
+      setIsLiked(response.data.isLiked);
+      setLikeCount(response.data.likeCount);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert optimistic update on error
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const handleToggleComments = () => {
+    setShowComments(!showComments);
+  };
 
   return (
     <article 
@@ -41,7 +67,7 @@ export function PostCard({ post, isNew = false }: PostCardProps) {
       }`}
     >
       {/* Post Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center mb-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold text-sm">
@@ -60,9 +86,6 @@ export function PostCard({ post, isNew = false }: PostCardProps) {
             <span className="text-xs text-gray-500">{formatTimestamp(post.createdAt)}</span>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Post Title */}
@@ -84,18 +107,53 @@ export function PostCard({ post, isNew = false }: PostCardProps) {
 
       {/* Post Actions */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" className="gap-2 h-8 px-2 text-gray-600 hover:text-red-600">
-          <Heart className="h-4 w-4" />
-          <span className="text-xs">0</span>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={`gap-2 h-8 px-2 group transition-all duration-200 ${
+            isLiked 
+              ? 'text-red-600 hover:text-red-700' 
+              : 'text-gray-600 hover:text-red-600'
+          }`}
+          onClick={handleLike}
+          disabled={isLiking}
+        >
+          <Heart 
+            className={`h-4 w-4 transition-all duration-200 ${
+              isLiked 
+                ? 'fill-red-600' 
+                : 'group-hover:fill-red-600'
+            }`} 
+          />
+          <span className="text-xs">{likeCount}</span>
         </Button>
-        <Button variant="ghost" size="sm" className="gap-2 h-8 px-2 text-gray-600 hover:text-blue-600">
-          <MessageSquare className="h-4 w-4" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={`gap-2 h-8 px-2 group transition-all duration-200 ${
+            showComments 
+              ? 'text-blue-600 hover:text-blue-700' 
+              : 'text-gray-600 hover:text-blue-600'
+          }`}
+          onClick={handleToggleComments}
+        >
+          <MessageSquare 
+            className={`h-4 w-4 transition-all duration-200 ${
+              showComments 
+                ? 'fill-blue-600' 
+                : 'group-hover:fill-blue-600'
+            }`} 
+          />
           <span className="text-xs">{commentsCount}</span>
         </Button>
-        <Button variant="ghost" size="sm" className="gap-2 h-8 px-2 text-gray-600 hover:text-blue-600">
-          <Send className="h-4 w-4" />
-        </Button>
       </div>
+
+      {/* Comments Section */}
+      <PostComments 
+        postId={post.id}
+        isOpen={showComments}
+        onCommentAdded={() => setCommentsCount(prev => prev + 1)}
+      />
     </article>
   );
 }

@@ -1,5 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
+// Utility function to get auth token
+export const getAuthToken = (): string | null => {
+  return localStorage.getItem('auth_token');
+};
+
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
   baseURL: '/api/v1',
@@ -9,6 +14,20 @@ const api: AxiosInstance = axios.create({
   },
   withCredentials: true, // Enable sending cookies with requests
 });
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Response interceptor to handle common errors
 api.interceptors.response.use(
@@ -96,13 +115,8 @@ export const clearAuthToken = () => {
   localStorage.removeItem('auth_token');
 };
 
-// Utility function to get auth token
-export const getAuthToken = (): string | null => {
-  return localStorage.getItem('auth_token');
-};
-
 // ============ Posts API ============
-import type { CreatePostRequest, CreatePostResponse, GetPostsResponse } from '@/types/api';
+import type { CreatePostRequest, CreatePostResponse, GetPostsResponse, GetCommentsResponse, AddCommentResponse } from '@/types/api';
 
 export const postsApi = {
   // Create a new post
@@ -123,6 +137,21 @@ export const postsApi = {
   // Delete a post
   deletePost: async (id: string) => {
     return apiClient.delete(`/posts/${id}`);
+  },
+
+  // Like or unlike a post
+  toggleLike: async (postId: string) => {
+    return apiClient.post(`/posts/${postId}/like`);
+  },
+
+  // Get comments for a post
+  getComments: async (postId: string): Promise<GetCommentsResponse> => {
+    return apiClient.get<GetCommentsResponse>(`/posts/${postId}/comments`);
+  },
+
+  // Add a comment to a post
+  addComment: async (postId: string, content: string): Promise<AddCommentResponse> => {
+    return apiClient.post<AddCommentResponse>(`/posts/${postId}/comments`, { content });
   },
 };
 
