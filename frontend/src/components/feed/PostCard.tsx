@@ -82,6 +82,13 @@ export function PostCard({ post, isNew = false }: PostCardProps) {
         </Badge>
       )}
 
+      {/* Forum Badge */}
+      {post.forum && (
+        <Badge variant="secondary" className="mb-3 bg-blue-50 text-blue-700">
+          # {post.forum.name}
+        </Badge>
+      )}
+
       {/* Post Actions */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" className="gap-2 h-8 px-2 text-gray-600 hover:text-red-600">

@@ -9,9 +9,10 @@ import type { Post } from '@/types/api';
 
 interface CreatePostProps {
   onPostCreated?: (post: Post) => void;
+  forumId?: string;
 }
 
-export function CreatePost({ onPostCreated }: CreatePostProps) {
+export function CreatePost({ onPostCreated, forumId }: CreatePostProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +39,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       const response = await postsApi.createPost({
         title: title.trim(),
         content: content.trim(),
+        forumId,
       });
 
       // Clear the form

@@ -11,9 +11,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import MainPage from "./pages/MainPage";
 import FeedPage from "./pages/FeedPage";
-import ChatsPage from "./pages/ChatsPage";
 import MessagesPage from "./pages/MessagesPage";
-import ExplorePage from "./pages/ExplorePage";
+import ExplorePage from "./pages/ExplorePage";import MyForumsPage from './pages/MyForumsPage';import ForumPage from "./pages/ForumPage";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +58,8 @@ const App = () => (
               >
                 <Route index element={<Navigate to="/app/feed" replace />} />
                 <Route path="feed" element={<FeedPage />} />
-                <Route path="chats" element={<ChatsPage />} />
+                <Route path="forums" element={<MyForumsPage />} />
+                <Route path="forums/:forumId" element={<ForumPage />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="explore" element={<ExplorePage />} />
               </Route>

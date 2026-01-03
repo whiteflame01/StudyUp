@@ -17,8 +17,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Clear token and redirect to login
-      localStorage.removeItem('auth_token');
+      // Redirect to login (session expired or not authenticated)
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -86,21 +85,6 @@ export const apiClient = new ApiClient(api);
 // Export the axios instance for direct use if needed
 export { api };
 
-// Utility function to set auth token
-export const setAuthToken = (token: string) => {
-  localStorage.setItem('auth_token', token);
-};
-
-// Utility function to clear auth token
-export const clearAuthToken = () => {
-  localStorage.removeItem('auth_token');
-};
-
-// Utility function to get auth token
-export const getAuthToken = (): string | null => {
-  return localStorage.getItem('auth_token');
-};
-
 // ============ Posts API ============
 import type { CreatePostRequest, CreatePostResponse, GetPostsResponse } from '@/types/api';
 
@@ -110,9 +94,13 @@ export const postsApi = {
     return apiClient.post<CreatePostResponse>('/posts', data);
   },
 
-  // Get all posts with pagination
-  getPosts: async (page: number = 1, limit: number = 20): Promise<GetPostsResponse> => {
-    return apiClient.get<GetPostsResponse>(`/posts?page=${page}&limit=${limit}`);
+  // Get all posts with pagination (optionally filter by forum)
+  getPosts: async (page: number = 1, limit: number = 20, forumId?: string): Promise<GetPostsResponse> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (forumId) {
+      params.append('forumId', forumId);
+    }
+    return apiClient.get<GetPostsResponse>(`/posts?${params.toString()}`);
   },
 
   // Get a single post by ID
@@ -168,5 +156,56 @@ export const chatsApi = {
   // Mark message as read
   markAsRead: async (chatId: string, messageId: string): Promise<void> => {
     return apiClient.patch(`/chats/${chatId}/messages/${messageId}/read`);
+  },
+};
+
+// ============ Forums API ============
+import type { 
+  GetForumsResponse, 
+  GetForumResponse, 
+  CreateForumRequest, 
+  CreateForumResponse,
+  UpdateForumRequest,
+  JoinForumResponse,
+  GetForumPostsResponse,
+  ApiResponse,
+  Forum
+} from '@/types/api';
+
+export const forumsApi = {
+  // Get all forums
+  getForums: async (): Promise<GetForumsResponse> => {
+    return apiClient.get<GetForumsResponse>('/forums');
+  },
+
+  // Get forum by ID
+  getForumById: async (forumId: string): Promise<GetForumResponse> => {
+    return apiClient.get<GetForumResponse>(`/forums/${forumId}`);
+  },
+
+  // Create a new forum
+  createForum: async (data: CreateForumRequest): Promise<CreateForumResponse> => {
+    return apiClient.post<CreateForumResponse>('/forums', data);
+  },
+
+  // Join a forum
+  joinForum: async (forumId: string): Promise<JoinForumResponse> => {
+    return apiClient.post<JoinForumResponse>(`/forums/${forumId}/join`);
+  },
+
+  // Get posts in a forum
+  getForumPosts: async (forumId: string, page: number = 1, limit: number = 20): Promise<GetForumPostsResponse> => {
+    return apiClient.get<GetForumPostsResponse>(`/forums/${forumId}/posts?page=${page}&limit=${limit}`);
+  },
+
+  // Update a forum (owner only)
+  updateForum: async (forumId: string, data: UpdateForumRequest): Promise<Forum> => {
+    const response = await apiClient.patch<ApiResponse<{ forum: Forum }>>(`/forums/${forumId}`, data);
+    return response.data.data.forum;
+  },
+
+  // Create a post in a forum
+  createForumPost: async (forumId: string, data: Omit<CreatePostRequest, 'forumId'>): Promise<CreatePostResponse> => {
+    return apiClient.post<CreatePostResponse>(`/forums/${forumId}/posts`, data);
   },
 };

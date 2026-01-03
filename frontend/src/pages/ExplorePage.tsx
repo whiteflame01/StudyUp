@@ -1,60 +1,120 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Hash, Users, UserPlus, TrendingUp, Clock, Loader2, MessageCircle } from 'lucide-react';
-import { usersApi } from '@/lib/api';
+import { Hash, Users, UserPlus, TrendingUp, Loader2, MessageCircle, Plus } from 'lucide-react';
+import { usersApi, forumsApi } from '@/lib/api';
 import { useSocket } from '@/hooks/useSocket';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import type { Forum } from '@/types/api';
 
-interface Forum {
-  id: string;
-  name: string;
-  description: string;
-  members: number;
-  similarity: number;
-  posts: number;
-  lastActive: string;
-}
-
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  members: number;
-  similarity: number;
-  topic: string;
-}
-
-const mockForums: Forum[] = [
-  { id: '1', name: 'Quantum Physics Deep Dive', description: 'Advanced discussions on quantum mechanics and particle physics', members: 342, similarity: 98, posts: 1240, lastActive: '2m ago' },
-  { id: '2', name: 'Linear Algebra Mastery', description: 'Matrix operations, eigenvalues, and vector spaces', members: 289, similarity: 96, posts: 890, lastActive: '15m ago' },
-  { id: '3', name: 'Organic Chemistry Lab', description: 'Reaction mechanisms and synthesis strategies', members: 456, similarity: 94, posts: 2100, lastActive: '30m ago' },
-  { id: '4', name: 'Calculus Problem Solving', description: 'Integration, differentiation, and optimization problems', members: 567, similarity: 92, posts: 1800, lastActive: '1h ago' },
-];
-
-const mockGroups: Group[] = [
-  { id: '1', name: 'QM Study Session', description: 'Weekly quantum mechanics problem-solving', members: 12, similarity: 97, topic: 'Quantum Mechanics' },
-  { id: '2', name: 'Algebra Warriors', description: 'Daily linear algebra practice', members: 8, similarity: 95, topic: 'Linear Algebra' },
-  { id: '3', name: 'Chem Lab Partners', description: 'Organic chemistry lab prep and review', members: 15, similarity: 93, topic: 'Chemistry' },
-  { id: '4', name: 'Calculus Crushers', description: 'Intensive calculus study group', members: 10, similarity: 91, topic: 'Calculus' },
-];
+const mockGroups: never[] = [];
 
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState<'forums' | 'groups' | 'users'>('forums');
+  const [activeTab, setActiveTab] = useState<'forums' | 'users'>('forums');
   const { onlineUsers } = useSocket();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Forum creation dialog state
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [forumName, setForumName] = useState('');
+  const [forumDescription, setForumDescription] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  // Fetch forums from API
+  const { data: forumsData, isLoading: isLoadingForums, error: forumsError } = useQuery({
+    queryKey: ['forums'],
+    queryFn: () => forumsApi.getForums(),
+  });
+
+  // Create forum mutation
+  const createForumMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; isPrivate?: boolean }) => forumsApi.createForum(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      setIsCreateDialogOpen(false);
+      setForumName('');
+      setForumDescription('');
+      setIsPrivate(false);
+      toast({
+        title: 'Success',
+        description: 'Forum created successfully!',
+      });
+      // Navigate to the new forum
+      navigate(`/app/forums/${response.data.forum.id}`);
+    },
+    onError: (error) => {
+      console.error('Error creating forum:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create forum. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Join forum mutation
+  const joinForumMutation = useMutation({
+    mutationFn: (forumId: string) => forumsApi.joinForum(forumId),
+    onSuccess: (_, forumId) => {
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      toast({
+        title: 'Success',
+        description: 'You have joined the forum!',
+      });
+      // Navigate to forum page
+      navigate(`/app/forums/${forumId}`);
+    },
+    onError: (error) => {
+      console.error('Error joining forum:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to join forum. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleCreateForum = () => {
+    if (!forumName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Forum name is required',
+        variant: 'destructive',
+      });
+      return;
+    }
+    createForumMutation.mutate({
+      name: forumName.trim(),
+      description: forumDescription.trim() || undefined,
+      isPrivate,
+    });
+  };
 
   // Fetch real users from the API
   const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useQuery({
     queryKey: ['users'],
     queryFn: () => usersApi.getUsers(),
-    enabled: activeTab === 'users', // Only fetch when users tab is active
+    enabled: activeTab === 'users',
   });
 
   const handleStartChat = (userId: string) => {
-    // Navigate to messages page with this user selected
     navigate('/app/messages', { state: { selectedUserId: userId } });
   };
 
@@ -76,15 +136,6 @@ export default function ExplorePage() {
             Forums
           </Button>
           <Button
-            variant={activeTab === 'groups' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('groups')}
-            className="gap-2"
-          >
-            <Users className="h-4 w-4" />
-            Groups
-          </Button>
-          <Button
             variant={activeTab === 'users' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveTab('users')}
@@ -99,11 +150,98 @@ export default function ExplorePage() {
       {/* Forums Tab */}
       {activeTab === 'forums' && (
         <div className="p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Forums matched to your interests</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-blue-600" />
+              <p className="text-sm text-gray-600">Join forums to connect with study communities</p>
+            </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Forum
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create a New Forum</DialogTitle>
+                  <DialogDescription>
+                    Create a forum to start discussions on any topic you're interested in.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="forum-name">Forum Name *</Label>
+                    <Input
+                      id="forum-name"
+                      placeholder="e.g., Quantum Physics Discussion"
+                      value={forumName}
+                      onChange={(e) => setForumName(e.target.value)}
+                      maxLength={80}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="forum-description">Description</Label>
+                    <Textarea
+                      id="forum-description"
+                      placeholder="What is this forum about?"
+                      value={forumDescription}
+                      onChange={(e) => setForumDescription(e.target.value)}
+                      maxLength={500}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="forum-private"
+                      checked={isPrivate}
+                      onChange={(e) => setIsPrivate(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <Label htmlFor="forum-private" className="cursor-pointer">
+                      Make this forum private (only members can see posts)
+                    </Label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                    disabled={createForumMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateForum}
+                    disabled={createForumMutation.isPending || !forumName.trim()}
+                  >
+                    {createForumMutation.isPending ? 'Creating...' : 'Create Forum'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-          {mockForums.map((forum) => (
+
+          {isLoadingForums && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          )}
+
+          {forumsError && (
+            <div className="text-center py-12">
+              <p className="text-sm text-red-600">Failed to load forums. Please try again.</p>
+            </div>
+          )}
+
+          {forumsData && forumsData.data.forums.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-600">No forums yet. Be the first to create one!</p>
+            </div>
+          )}
+
+          {forumsData && forumsData.data.forums.map((forum) => (
             <Card key={forum.id} className="p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3 flex-1">
@@ -113,70 +251,60 @@ export default function ExplorePage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-sm">{forum.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                        {forum.similarity}% match
-                      </Badge>
+                      {forum.isPrivate && (
+                        <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+                          Private
+                        </Badge>
+                      )}
+                      {forum.isMember && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                          Joined
+                        </Badge>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{forum.description}</p>
+                    {forum.description && (
+                      <p className="text-xs text-gray-600 mb-2">{forum.description}</p>
+                    )}
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {forum.members} members
+                        {forum.memberCount} members
                       </span>
-                      <span>{forum.posts} posts</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {forum.lastActive}
-                      </span>
+                      <span>{forum.postCount} posts</span>
                     </div>
                   </div>
                 </div>
-                <Button size="sm" className="ml-2">Join</Button>
+                {forum.isMember ? (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigate(`/app/forums/${forum.id}`)}
+                  >
+                    View
+                  </Button>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    onClick={() => joinForumMutation.mutate(forum.id)}
+                    disabled={joinForumMutation.isPending}
+                  >
+                    {joinForumMutation.isPending ? 'Joining...' : 'Join'}
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
+
+          {/* How It Works */}
+          <Card className="mt-4 p-4 bg-blue-50 border-blue-200">
+            <h3 className="font-semibold text-sm mb-2">How It Works</h3>
+            <p className="text-xs text-gray-600">
+              Join forums to discuss topics you're interested in. Anyone can create a forum and post within it.
+            </p>
+          </Card>
         </div>
       )}
 
-      {/* Groups Tab */}
-      {activeTab === 'groups' && (
-        <div className="p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-gray-600">Study groups matched to your behavior</p>
-          </div>
-          {mockGroups.map((group) => (
-            <Card key={group.id} className="p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm">{group.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                        {group.similarity}% match
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{group.description}</p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <Badge variant="outline" className="text-xs">{group.topic}</Badge>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {group.members} members
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <Button size="sm" className="ml-2">Join</Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Users Tab */}
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="p-4">
@@ -272,11 +400,10 @@ export default function ExplorePage() {
 
       {/* Info Card */}
       <Card className="m-4 p-4 bg-blue-50 border-blue-200">
-        <h3 className="font-semibold text-sm mb-2">How Matching Works</h3>
+        <h3 className="font-semibold text-sm mb-2">How It Works</h3>
         <p className="text-xs text-gray-600">
-          {activeTab === 'forums' && 'Forums are ranked by how well their content matches your study patterns and interests.'}
-          {activeTab === 'groups' && 'Groups are matched based on your learning pace, study schedule, and topic preferences.'}
-          {activeTab === 'users' && 'Users are ranked by behavioral similarity - study habits, learning tempo, and topic overlap.'}
+          {activeTab === 'forums' && 'Browse and join forums to discuss topics you\'re interested in.'}
+          {activeTab === 'users' && 'Connect with other students by sending them a message. Build your study network!'}
         </p>
       </Card>
     </div>

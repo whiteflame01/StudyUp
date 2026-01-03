@@ -6,8 +6,7 @@ import {
   MessageCircle, 
   Users,
   Hash,
-  LogOut,
-  Compass
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -51,24 +50,13 @@ export default function MainPage() {
             </Button>
 
             <Button
-              variant={isActive('/app/chats') ? 'secondary' : 'ghost'}
+              variant={isActive('/app/forums') ? 'secondary' : 'ghost'}
               className="w-full justify-start gap-3 h-12"
               asChild
             >
-              <Link to="/app/chats">
-                <MessageCircle className="h-5 w-5" />
-                <span className="text-base">Chats</span>
-              </Link>
-            </Button>
-
-            <Button
-              variant={isActive('/app/messages') ? 'secondary' : 'ghost'}
-              className="w-full justify-start gap-3 h-12"
-              asChild
-            >
-              <Link to="/app/messages">
-                <Users className="h-5 w-5" />
-                <span className="text-base">Messages</span>
+              <Link to="/app/forums">
+                <Hash className="h-5 w-5" />
+                <span className="text-base">My Forums</span>
               </Link>
             </Button>
 
@@ -78,8 +66,19 @@ export default function MainPage() {
               asChild
             >
               <Link to="/app/explore">
-                <Compass className="h-5 w-5" />
+                <Users className="h-5 w-5" />
                 <span className="text-base">Explore</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant={isActive('/app/messages') ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 h-12"
+              asChild
+            >
+              <Link to="/app/messages">
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-base">Messages</span>
               </Link>
             </Button>
           </nav>
@@ -128,17 +127,17 @@ export default function MainPage() {
             asChild
           >
             <Link to="/app/feed">
-              <Hash className="h-6 w-6" />
+              <BookOpen className="h-6 w-6" />
             </Link>
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className={isActive('/app/chats') ? 'text-blue-600' : 'text-gray-600'}
+            className={isActive('/app/forums') ? 'text-blue-600' : 'text-gray-600'}
             asChild
           >
-            <Link to="/app/chats">
-              <MessageCircle className="h-6 w-6" />
+            <Link to="/app/forums">
+              <Hash className="h-6 w-6" />
             </Link>
           </Button>
           <Button
@@ -148,7 +147,7 @@ export default function MainPage() {
             asChild
           >
             <Link to="/app/explore">
-              <Compass className="h-6 w-6" />
+              <Users className="h-6 w-6" />
             </Link>
           </Button>
           <Button
@@ -158,7 +157,7 @@ export default function MainPage() {
             asChild
           >
             <Link to="/app/messages">
-              <Users className="h-6 w-6" />
+              <MessageCircle className="h-6 w-6" />
             </Link>
           </Button>
         </div>

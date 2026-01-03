@@ -45,6 +45,14 @@ router.post('/', authenticateJWT, async (req: Request, res: Response): Promise<v
       return;
     }
 
+    if (error instanceof Error && error.message === 'Forum not found') {
+      res.status(404).json({
+        error: 'Not found',
+        message: error.message,
+      });
+      return;
+    }
+
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to create post',
@@ -60,8 +68,9 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    const forumId = typeof req.query.forumId === 'string' ? req.query.forumId : undefined;
 
-    const result = await postsService.getPosts(page, limit);
+    const result = await postsService.getPosts(page, limit, forumId);
 
     res.status(200).json({
       success: true,

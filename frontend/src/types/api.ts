@@ -156,6 +156,11 @@ export interface Post {
       major?: string;
     };
   };
+  forum?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   _count?: {
     comments: number;
   };
@@ -165,6 +170,7 @@ export interface CreatePostRequest {
   title: string;
   content: string;
   topic?: string;
+  forumId?: string;
 }
 
 export interface CreatePostResponse {
@@ -172,6 +178,81 @@ export interface CreatePostResponse {
   message: string;
   data: {
     post: Post;
+  };
+}
+
+// Forum types
+export interface Forum {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  isPrivate: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdById: string;
+  memberCount: number;
+  postCount: number;
+  isMember?: boolean;
+}
+
+export interface CreateForumRequest {
+  name: string;
+  description?: string;
+  isPrivate?: boolean;
+}
+
+export interface UpdateForumRequest {
+  name?: string;
+  description?: string;
+  isPrivate?: boolean;
+}
+
+export interface CreateForumResponse {
+  success: boolean;
+  message: string;
+  data: {
+    forum: Forum;
+  };
+}
+
+export interface GetForumsResponse {
+  success: boolean;
+  data: {
+    forums: Forum[];
+  };
+}
+
+export interface GetForumResponse {
+  success: boolean;
+  data: {
+    forum: Forum;
+  };
+}
+
+export interface JoinForumResponse {
+  success: boolean;
+  message: string;
+  data: {
+    membership: {
+      id: string;
+      forumId: string;
+      userId: string;
+      createdAt: string;
+    };
+  };
+}
+
+export interface GetForumPostsResponse {
+  success: boolean;
+  data: {
+    posts: Post[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   };
 }
 

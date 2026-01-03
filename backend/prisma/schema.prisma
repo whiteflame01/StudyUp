@@ -27,6 +27,8 @@ model User {
   receivedMessages Message[] @relation("ReceivedMessages")
   chatsAsUser1     Chat[]    @relation("User1Chats")
   chatsAsUser2     Chat[]    @relation("User2Chats")
+  forumsCreated    Forum[]
+  forumMemberships ForumMembership[]
 }
 
 model Profile {
@@ -56,8 +58,44 @@ model Post {
 
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  forumId   String?
+  forum     Forum?   @relation(fields: [forumId], references: [id], onDelete: Cascade)
   
   comments  Comment[]
+
+  @@index([forumId])
+}
+
+model Forum {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isPrivate   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  posts       Post[]
+  memberships ForumMembership[]
+
+  @@unique([name])
+  @@index([createdAt])
+}
+
+model ForumMembership {
+  id        String   @id @default(uuid())
+  forumId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  forum Forum @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([forumId, userId])
+  @@index([userId])
 }
 
 model Comment {

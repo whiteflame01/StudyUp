@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import postsRoutes from './routes/posts';
 import usersRoutes from './routes/users';
 import chatsRoutes from './routes/chats';
+import forumsRoutes from './routes/forums';
 
 // Load environment variables
 dotenv.config();
@@ -71,6 +72,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/posts', postsRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/chats', chatsRoutes);
+app.use('/api/v1/forums', forumsRoutes);
 
 // API info endpoint
 app.get('/', (_req, res) => {
@@ -84,7 +86,8 @@ app.get('/', (_req, res) => {
       auth: '/api/v1/auth',
       posts: '/api/v1/posts',
       users: '/api/v1/users',
-      chats: '/api/v1/chats'
+      chats: '/api/v1/chats',
+      forums: '/api/v1/forums'
     },
     message: 'Welcome to Study Up Platform API.'
   });

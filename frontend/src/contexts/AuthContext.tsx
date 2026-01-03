@@ -77,8 +77,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setUser(null);
     }
-    localStorage.removeItem('auth_token');
-    setUser(null);
   };
 
   const value: AuthContextType = {
