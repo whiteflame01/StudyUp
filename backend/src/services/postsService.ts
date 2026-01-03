@@ -9,7 +9,13 @@ export const createPostSchema = z.object({
   forumId: z.string().uuid('Invalid forum').optional(),
 });
 
+// Validation schema for creating a comment
+export const createCommentSchema = z.object({
+  content: z.string().min(1, 'Content is required').max(1000, 'Content is too long'),
+});
+
 export type CreatePostInput = z.infer<typeof createPostSchema>;
+export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 
 export class PostsService {
   /**
@@ -79,6 +85,7 @@ export class PostsService {
         _count: {
           select: {
             comments: true,
+            likes: true,
           }
         }
       }
@@ -90,7 +97,7 @@ export class PostsService {
   /**
    * Get all posts with pagination
    */
-  async getPosts(page: number = 1, limit: number = 20, forumId?: string) {
+  async getPosts(page: number = 1, limit: number = 20, forumId?: string, userId?: string) {
     const skip = (page - 1) * limit;
     
     // If fetching main feed (no forumId), exclude posts from private forums
@@ -140,6 +147,7 @@ export class PostsService {
           _count: {
             select: {
               comments: true,
+              likes: true,
             }
           }
         }
@@ -147,8 +155,31 @@ export class PostsService {
       prisma.post.count({ where: whereClause }),
     ]);
 
+    // Check which posts the user has liked
+    let postsWithLikeStatus = posts;
+    if (userId) {
+      const userLikes = await prisma.like.findMany({
+        where: {
+          userId,
+          postId: { in: posts.map(p => p.id) },
+        },
+        select: { postId: true },
+      });
+      
+      const likedPostIds = new Set(userLikes.map(l => l.postId));
+      postsWithLikeStatus = posts.map(post => ({
+        ...post,
+        isLiked: likedPostIds.has(post.id),
+      }));
+    } else {
+      postsWithLikeStatus = posts.map(post => ({
+        ...post,
+        isLiked: false,
+      }));
+    }
+
     return {
-      posts,
+      posts: postsWithLikeStatus,
       pagination: {
         total,
         page,
@@ -161,7 +192,7 @@ export class PostsService {
   /**
    * Get a single post by ID
    */
-  async getPostById(postId: string) {
+  async getPostById(postId: string, userId?: string) {
     const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
@@ -211,7 +242,153 @@ export class PostsService {
       throw new Error('Post not found');
     }
 
-    return post;
+    // Check if user has liked this post
+    let isLiked = false;
+    if (userId) {
+      const like = await prisma.like.findUnique({
+        where: {
+          postId_userId: {
+            postId,
+            userId,
+          },
+        },
+      });
+      isLiked = !!like;
+    }
+
+    return {
+      ...post,
+      isLiked,
+    };
+  }
+
+  /**
+   * Like a post
+   */
+  async likePost(postId: string, userId: string) {
+    // Check if post exists
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    // Check if already liked
+    const existingLike = await prisma.like.findUnique({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
+      },
+    });
+
+    if (existingLike) {
+      throw new Error('Post already liked');
+    }
+
+    // Create like
+    await prisma.like.create({
+      data: {
+        postId,
+        userId,
+      },
+    });
+
+    // Get updated like count
+    const likeCount = await prisma.like.count({
+      where: { postId },
+    });
+
+    return { liked: true, likeCount };
+  }
+
+  /**
+   * Unlike a post
+   */
+  async unlikePost(postId: string, userId: string) {
+    // Check if post exists
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    // Check if like exists
+    const existingLike = await prisma.like.findUnique({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
+      },
+    });
+
+    if (!existingLike) {
+      throw new Error('Post not liked');
+    }
+
+    // Delete like
+    await prisma.like.delete({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
+      },
+    });
+
+    // Get updated like count
+    const likeCount = await prisma.like.count({
+      where: { postId },
+    });
+
+    return { liked: false, likeCount };
+  }
+
+  /**
+   * Add a comment to a post
+   */
+  async addComment(postId: string, authorId: string, input: CreateCommentInput) {
+    // Validate input
+    const validatedInput = createCommentSchema.parse(input);
+
+    // Check if post exists
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    // Create comment
+    const comment = await prisma.comment.create({
+      data: {
+        content: validatedInput.content,
+        postId,
+        authorId,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            profile: {
+              select: {
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return comment;
   }
 
   /**

@@ -138,6 +138,21 @@ export interface SendMessageResponse {
 }
 
 // Post types
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  postId: string;
+  authorId: string;
+  author: {
+    id: string;
+    username: string;
+    profile?: {
+      avatarUrl?: string;
+    };
+  };
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -161,8 +176,11 @@ export interface Post {
     name: string;
     slug: string;
   };
+  comments?: Comment[];
+  isLiked?: boolean;
   _count?: {
     comments: number;
+    likes: number;
   };
 }
 
@@ -178,6 +196,27 @@ export interface CreatePostResponse {
   message: string;
   data: {
     post: Post;
+  };
+}
+
+export interface CreateCommentRequest {
+  content: string;
+}
+
+export interface CreateCommentResponse {
+  success: boolean;
+  message: string;
+  data: {
+    comment: Comment;
+  };
+}
+
+export interface LikePostResponse {
+  success: boolean;
+  message: string;
+  data: {
+    liked: boolean;
+    likeCount: number;
   };
 }
 

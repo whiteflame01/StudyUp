@@ -2,11 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Send, 
-  MoreVertical, 
   Check, 
   CheckCheck,
-  Wifi,
-  WifiOff,
   Loader2
 } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
@@ -230,16 +227,6 @@ export function ChatWindow({ userId, onBack }: ChatWindowProps) {
               </p>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {connected ? (
-            <Wifi className="h-4 w-4 text-green-500" />
-          ) : (
-            <WifiOff className="h-4 w-4 text-red-500" />
-          )}
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 

@@ -23,6 +23,7 @@ model User {
   profile          Profile? // One-to-One relation (Optional)
   posts            Post[]
   comments         Comment[]
+  likes            Like[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   chatsAsUser1     Chat[]    @relation("User1Chats")
@@ -62,6 +63,7 @@ model Post {
   forum     Forum?   @relation(fields: [forumId], references: [id], onDelete: Cascade)
   
   comments  Comment[]
+  likes     Like[]
 
   @@index([forumId])
 }
@@ -108,6 +110,21 @@ model Comment {
   
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model Chat {

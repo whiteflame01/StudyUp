@@ -86,7 +86,14 @@ export const apiClient = new ApiClient(api);
 export { api };
 
 // ============ Posts API ============
-import type { CreatePostRequest, CreatePostResponse, GetPostsResponse } from '@/types/api';
+import type { 
+  CreatePostRequest, 
+  CreatePostResponse, 
+  GetPostsResponse,
+  CreateCommentRequest,
+  CreateCommentResponse,
+  LikePostResponse
+} from '@/types/api';
 
 export const postsApi = {
   // Create a new post
@@ -111,6 +118,21 @@ export const postsApi = {
   // Delete a post
   deletePost: async (id: string) => {
     return apiClient.delete(`/posts/${id}`);
+  },
+
+  // Like a post
+  likePost: async (id: string): Promise<LikePostResponse> => {
+    return apiClient.post<LikePostResponse>(`/posts/${id}/like`);
+  },
+
+  // Unlike a post
+  unlikePost: async (id: string): Promise<LikePostResponse> => {
+    return apiClient.delete<LikePostResponse>(`/posts/${id}/like`);
+  },
+
+  // Add a comment to a post
+  addComment: async (id: string, data: CreateCommentRequest): Promise<CreateCommentResponse> => {
+    return apiClient.post<CreateCommentResponse>(`/posts/${id}/comments`, data);
   },
 };
 
