@@ -21,9 +21,9 @@ export default function MainPage() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+      <header className="fixed top-0 left-0 right-0 w-full z-50 bg-white border-b border-gray-200">
         <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
@@ -34,10 +34,9 @@ export default function MainPage() {
         </div>
       </header>
 
-      <div className="flex pt-16">
-        {/* Left Sidebar */}
-        <aside className="hidden md:flex flex-col w-64 h-[calc(100vh-4rem)] sticky top-16 border-r border-gray-200 p-4">
-          <nav className="space-y-1 flex-1">
+      {/* Left Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 p-4 bg-white z-40 overflow-y-auto">
+        <nav className="space-y-1 flex-1">
             <Button
               variant={isActive('/app/feed') ? 'secondary' : 'ghost'}
               className="w-full justify-start gap-3 h-12"
@@ -111,11 +110,10 @@ export default function MainPage() {
           )}
         </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1 min-h-screen">
-          <Outlet />
-        </main>
-      </div>
+      {/* Main Content Area */}
+      <main className="pt-16 md:ml-64">
+        <Outlet />
+      </main>
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">

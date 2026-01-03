@@ -22,6 +22,7 @@ import { socketService } from './services/socketService';
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Initialize Socket.IO with CORS configuration
 const io = new Server(httpServer, {
@@ -185,9 +186,10 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 // Start server
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+httpServer.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on ${HOST}:${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Network: Server accessible on all network interfaces`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
   console.log(`📚 API info: http://localhost:${PORT}/`);
 });
